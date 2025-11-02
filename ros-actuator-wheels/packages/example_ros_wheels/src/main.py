@@ -9,7 +9,7 @@ from dt_robot_utils import get_robot_name
 
 # parameters
 DURATION: float = 20.0
-SPEED: float = 0.5
+SPEED: float = 0.1
 
 
 def stop_wheels(publisher):
