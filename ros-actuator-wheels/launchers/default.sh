@@ -2,6 +2,8 @@
 
 source /environment.sh
 
+# initialize launch file
+#dt-launchfile-init
 
 # YOUR CODE BELOW THIS LINE
 # ----------------------------------------------------------------------------
@@ -18,4 +20,4 @@ dt-exec rosrun example_ros_wheels driver_cpp_node
 # YOUR CODE ABOVE THIS LINE
 
 # wait for app to end
-dt-launchfile-join
+#dt-launchfile-join
