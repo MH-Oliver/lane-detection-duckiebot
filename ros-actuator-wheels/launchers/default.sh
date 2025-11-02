@@ -13,7 +13,7 @@ dt-launchfile-init
 # NOTE: Use `dt-exec COMMAND` to run the main process (blocking process)
 
 # launching app
-dt-exec rosrun example_ros_wheels main.py
+dt-exec rosrun example_ros_wheels driver_cpp_node
 
 
 # ----------------------------------------------------------------------------
