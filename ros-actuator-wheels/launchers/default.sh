@@ -2,8 +2,6 @@
 
 source /environment.sh
 
-# initialize launch file
-dt-launchfile-init
 
 # YOUR CODE BELOW THIS LINE
 # ----------------------------------------------------------------------------
