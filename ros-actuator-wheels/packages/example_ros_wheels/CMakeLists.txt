@@ -9,9 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-catkin_package(
-  CATKIN_DEPENDS roscpp rospy duckietown_msgs
-)
+catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
