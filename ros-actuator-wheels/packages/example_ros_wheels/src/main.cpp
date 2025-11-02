@@ -9,7 +9,7 @@
 // Entspricht DURATION: float = 20.0
 const double DURATION = 20.0;
 // Entspricht SPEED: float = 0.1
-const double SPEED = 0.1;
+const double SPEED = 0.9;
 
 /**
  * @brief Entspricht der Python-Funktion `stop_wheels`.
