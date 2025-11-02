@@ -4,8 +4,8 @@ import time
 
 import rospy
 from duckietown_msgs.msg import WheelsCmdStamped
+
 from dt_robot_utils import get_robot_name
-from dt_WDT import (WDT, WDT_TMO)  # <--- HINZUGEFÜGT (1)
 
 # parameters
 DURATION: float = 20.0
@@ -28,23 +28,13 @@ def driver():
         queue_size=1,
         tcp_nodelay=True,
     )
-
-    # setup watchdog  # <--- HINZUGEFÜGT (2)
-    wdt = WDT(tmo=WDT_TMO, tmo_cb=lambda: stop_wheels(publisher))
-    wdt.start()
-
     # stop wheels when shutting down
     rospy.on_shutdown(lambda: stop_wheels(publisher))
-
     # drive
     stime: float = time.time()
     while not rospy.is_shutdown() and time.time() - stime < DURATION:
         publisher.publish(WheelsCmdStamped(vel_left=SPEED, vel_right=SPEED))
-        wdt.reset()  # <--- HINZUGEFÜGT (3) - Das ist das "Streicheln"
         time.sleep(0.1)
-
-    # stop watchdog
-    wdt.stop() # <--- HINZUGEFÜGT (4)
 
 
 if __name__ == '__main__':
