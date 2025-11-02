@@ -8,8 +8,8 @@ from duckietown_msgs.msg import WheelsCmdStamped
 from dt_robot_utils import get_robot_name
 
 # parameters
-DURATION: float = 5.0
-SPEED: float = 0.25
+DURATION: float = 20.0
+SPEED: float = 0.5
 
 
 def stop_wheels(publisher):
