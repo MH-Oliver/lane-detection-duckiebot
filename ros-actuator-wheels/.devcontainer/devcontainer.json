@@ -1,0 +1,28 @@
+{
+    "name": "Duckiebot ROS 1 Dev",
+
+    // Wir sagen VS Code, es soll ein fertiges Image von Docker Hub verwenden.
+    // "daffy" ist die Duckiebot-Version, die auf ROS Noetic basiert.
+    "image": "duckietown/dt-ros-commons:daffy-amd64",
+
+    // Wir "spiegeln" (mounten) immer noch unseren Code in den Container
+    "workspaceMount": "source=${localWorkspaceFolder}/packages,target=/ws/src,type=bind,consistency=cached",
+    
+    // Der Arbeitsordner in diesem Image ist /ws
+    "workspaceFolder": "/ws",
+
+    // Installiere diese Erweiterungen automatisch IM Container
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ros-tooling.ros",
+        "ms-vscode.cmake-tools"
+    ],
+
+    // Wir brauchen keinen "postCreateCommand" mehr, da alles schon
+    // im Image installiert ist (auch duckietown_msgs).
+    
+    // Führe diesen Befehl aus, um die Shell "interaktiv" zu halten,
+    // damit der Container nicht sofort stoppt.
+    "overrideCommand": false,
+    "runArgs": ["--init", "--entrypoint", "/bin/bash"]
+}
