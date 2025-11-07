@@ -4,7 +4,7 @@
 
 #ifndef DOCKIBOT_DISPLAYFOURPICTURES_H
 #define DOCKIBOT_DISPLAYFOURPICTURES_H
-#include <opencv2/opencv.hpp>
+#include <opencv4/opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
 class DisplayFourPictures {
