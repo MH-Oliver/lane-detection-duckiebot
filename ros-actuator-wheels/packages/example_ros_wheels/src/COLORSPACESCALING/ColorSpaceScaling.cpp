@@ -4,19 +4,19 @@
 Mat ColorSpaceScaling::m_image; // Definition
 int ColorSpaceScaling::m_imageFlagYuv;
 // greyscale(...) bleibt unverändert
-void ColorSpaceScaling::greyscale(Mat image) {
+void ColorSpaceScaling::greyscale() {
     if (m_image.empty()) {
         throw std::invalid_argument("No image is provided");
     }else {
-        cv::cvtColor(image, m_image, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(m_image, m_image, cv::COLOR_BGR2GRAY);
 
     }
 }
-void ColorSpaceScaling::backToRGB(Mat image) {
+void ColorSpaceScaling::backYUVToRGB() {
     if (m_image.empty()) {
         throw std::invalid_argument("No image is provided");
     }else {
-        cv::cvtColor(image, m_image, cv::COLOR_YUV2BGR);
+        cv::cvtColor(m_image, m_image, cv::COLOR_YUV2BGR);
 
     }
 }
@@ -57,7 +57,7 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
                                cv::Point(current_x, y_line), // KORRIGIERTE POSITION
                                7,                            // Radius
                                cv::Scalar(255,0, 0),      // Farbe (rot)
-                               1);
+                               0);
         int u_val = static_cast<int>(pixel[2]); // Cb (Kanal 2)
         int v_val = static_cast<int>(pixel[1]); // Cr (Kanal 1)
 
@@ -71,7 +71,7 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
                        cv::Point(current_x, y_line), // KORRIGIERTE POSITION
                        7,                            // Radius
                        cv::Scalar(0, 255, 255),      // Farbe (Gelb)
-                       1);                          // Gefüllt
+                       0);                          // Gefüllt
         }
         //Mat yuvImage = yuvscale(m_image); heir einfügen bzw ausklammern wenn wirklcih evrwenden
 
@@ -117,16 +117,16 @@ Mat ColorSpaceScaling::CompleteRunCSS(Mat image) {
     if (image.empty()) {
         throw std::invalid_argument("No image is provided");
     }
-    Mat imageForExamplegrey=image.clone();///< kann raus wenn wirklich konvertiert wird
+    
     m_image = image.clone();
-    Mat bsp=image.clone();
+    
     verticalThreeFourthLine();
     DisplayFourPictures &display=DisplayFourPictures::getInstance();
-    display.addPictures(image);
+    display.addPictures(m_image);
     yuvscale();
     display.addPictures(m_image);
-    backToRGB((m_image));
-    greyscale(m_image);
+    backYUVToRGB();
+    greyscale();
     display.addPictures(m_image);
 
 

@@ -8,9 +8,9 @@ public:
     static int m_imageFlagYuv;
     static Mat m_image; // Das BGR-Bild, auf das wir zeichnen
 
-    static void greyscale(Mat Image);
+    static void greyscale();
 
-    static void backToRGB(Mat image);
+    static void backYUVToRGB();
 
     static void yuvscale();
 
