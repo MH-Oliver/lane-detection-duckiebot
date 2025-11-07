@@ -6,27 +6,27 @@ int ColorSpaceScaling::m_imageFlagYuv;
 // greyscale(...) bleibt unverändert
 void ColorSpaceScaling::greyscale() {
     if (m_image.empty()) {
-        throw std::invalid_argument("No image is provided");
+        throw invalid_argument("No image is provided");
     }else {
-        cv::cvtColor(m_image, m_image, cv::COLOR_BGR2GRAY);
+        cvtColor(m_image, m_image, COLOR_BGR2GRAY);
 
     }
 }
 void ColorSpaceScaling::backYUVToRGB() {
     if (m_image.empty()) {
-        throw std::invalid_argument("No image is provided");
-    }else {
-        cv::cvtColor(m_image, m_image, cv::COLOR_YUV2BGR);
-
+        throw invalid_argument("No image is provided");
+    }else if(m_imageFlagYuv==1){
+        cvtColor(m_image, m_image, COLOR_YUV2BGR);
     }
+    
 }
 void ColorSpaceScaling::yuvscale() {
     if (m_image.empty()) {
-        throw std::invalid_argument("No image is provided");
+        throw invalid_argument("No image is provided");
     }else {
         // KORREKTUR/HINWEIS: Wenn u=Cb und v=Cr ist,
         // MUSST du COLOR_BGR2YCrCb verwenden!
-        cv::cvtColor(m_image, m_image, cv::COLOR_BGR2YCrCb);
+        cvtColor(m_image, m_image, COLOR_BGR2YUV);
 
     }
 }
@@ -34,8 +34,7 @@ void ColorSpaceScaling::yuvscale() {
 // ==========================================================
 // KORRIGIERTE drawLine FUNKTION
 // ==========================================================
-void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
-    
+void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside,const Mat& yuvImage) {
     int current_x = 0; // Die X-Position, die wir scannen
 
     // 1. Startposition bestimmen
@@ -46,21 +45,23 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
         // Startet auf der rechten Seite, 11 Schritte "links" vom rechten Rand
         current_x = width - starlefside - (step * 11);
     }
-
+    m_imageFlagYuv=1;
     // 2. Schleife: Scanne 11 Punkte
     for (int i = 0; i < 11; i++) {
         
         // Hole den YCrCb-Pixelwert aus dem YCrCb-BILD (yuvImage)
         // an der korrekten Position (y_line, current_x)
-        cv::Vec3b pixel = m_image.at<cv::Vec3b>(y_line, current_x);
-        cv::circle(m_image,
-                               cv::Point(current_x, y_line), // KORRIGIERTE POSITION
-                               7,                            // Radius
-                               cv::Scalar(255,0, 0),      // Farbe (rot)
-                               0);
-        int u_val = static_cast<int>(pixel[2]); // Cb (Kanal 2)
-        int v_val = static_cast<int>(pixel[1]); // Cr (Kanal 1)
-
+        
+        Vec3b pixel = yuvImage.at<Vec3b>(y_line, current_x);
+        
+        circle(m_image,
+           Point(current_x, y_line), 
+           7,                           
+           Scalar( 0,0,255),        // ROT (R=255, G=0, B=0)
+           1);
+        int u_val = static_cast<int>(pixel[1]); // Cb (Kanal 2)
+        int v_val = static_cast<int>(pixel[2]); // Cr (Kanal 1)
+        cout << "u - v: " << u_val <<" - "<<v_val <<"="<<u_val-v_val <<"\n";
         // "wenn u-v < -15"
         if (u_val - v_val < -15) {
             m_imageFlagYuv=1;///< muss eigtl 1 wir sagen damit bild im yuv keine gruastufenkonvertierung durchführen
@@ -68,13 +69,12 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
             // Zeichne einen GELBEN Punkt auf das BGR-Bild (m_image)
             // an der KORREKTEN Position (current_x)
             cv::circle(m_image,
-                       cv::Point(current_x, y_line), // KORRIGIERTE POSITION
-                       7,                            // Radius
-                       cv::Scalar(0, 255, 255),      // Farbe (Gelb)
-                       0);                          // Gefüllt
+           cv::Point(current_x, y_line), 
+           7,                            
+           cv::Scalar( 0,255, 255),      // GELB (R=255, G=255, B=0)
+           1);// Gefüllt
         }
         //Mat yuvImage = yuvscale(m_image); heir einfügen bzw ausklammern wenn wirklcih evrwenden
-
 
         current_x += step;
     }
@@ -86,7 +86,7 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside) {
 void ColorSpaceScaling::verticalThreeFourthLine() {
 
     if (m_image.empty()) {
-        throw std::invalid_argument("No image is provided");
+        throw invalid_argument("No image is provided");
     }
 
     // 1. m_image als *Kopie* des Originals (BGR) speichern, ZUM ZEICHNEN.
@@ -94,33 +94,36 @@ void ColorSpaceScaling::verticalThreeFourthLine() {
 
     // 2. EINE YCrCb-Version erstellen, NUR ZUM LESEN
      // Nutzt die korrigierte YCrCb-Konvertierung
-
-    int startleftside = 350;
+    Mat yuvimage=m_image.clone();
+    cvtColor(yuvimage, yuvimage, COLOR_BGR2YUV);
+    int startleftside = 150;
     int width = m_image.cols;
     int height = m_image.rows;
     int line_y = (height * 3) / 4;
-    int step = std::max(1, static_cast<int>(width * 0.01));
+    int step = max(1, static_cast<int>(width * 0.01));
 
-    std::cout << "Bildgröße: " << width << "x" << height << "\n";
-    std::cout << "Scan-Linie bei y=" << line_y << "\n";
-    std::cout << "Pixel-Abstand: " << step << "px\n";
-
+    cout << "Bildgröße: " << width << "x" << height << "\n";
+    cout << "Scan-Linie bei y=" << line_y << "\n";
+    cout << "Pixel-Abstand: " << step << "px\n";
+    
     // 3. Rufe die korrigierte drawLine auf
-    drawLine( 1, step, line_y, startleftside);
-    drawLine(-1, step, line_y, startleftside);
-
+    drawLine( 1, step, line_y, startleftside,yuvimage);
+    drawLine(-1, step, line_y, startleftside,yuvimage);
+    
 
 
 }
 
 Mat ColorSpaceScaling::CompleteRunCSS(Mat image) {
     if (image.empty()) {
-        throw std::invalid_argument("No image is provided");
+        throw invalid_argument("No image is provided");
     }
     
     m_image = image.clone();
-    
+    Size grid_size(640, 480);
+    resize(m_image,m_image, grid_size);
     verticalThreeFourthLine();
+    
     DisplayFourPictures &display=DisplayFourPictures::getInstance();
     display.addPictures(m_image);
     yuvscale();
