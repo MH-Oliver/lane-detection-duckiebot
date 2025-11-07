@@ -15,7 +15,7 @@ void onePictureAandB(Mat image) {
 }
 int main() {
     DisplayFourPictures& display=DisplayFourPictures::getInstance();
-    string base_path = "/src/example_ros_wheels/src/images/";
+    string base_path = "/ws/src/example_ros_wheels/src/images/";
 
     Mat image1 = imread(base_path + "13608.png");
     Mat image2 = imread(base_path + "15582.png");
