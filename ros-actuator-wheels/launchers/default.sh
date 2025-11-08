@@ -9,23 +9,10 @@ dt-launchfile-init
 # ----------------------------------------------------------------------------
 
 
-echo "Warte auf den Start von /zeta/lane_controller_node..."
-while ! rosnode list | grep -q /zeta/lane_controller_node; do
-  sleep 0.1
-done
-echo "Knoten gefunden."
-
-# 2. Wir setzen den ROS-Parameter "enabled" dieses Knotens auf "false".
-#    Dies stoppt den Knoten nicht, aber es sagt ihm, dass er
-#    keine Befehle mehr senden (publishen) soll.
-echo "Deaktiviere /zeta/lane_controller_node..."
-rosparam set /zeta/lane_controller_node/enabled false
-echo "Lane Controller ist jetzt deaktiviert."
-
-# ----------------------------------------------------------------------------
+# NOTE: Use the variable DT_REPO_PATH to know the absolute path to your code
+# NOTE: Use `dt-exec COMMAND` to run the main process (blocking process)
 
 # launching app
-# Erst JETZT starten wir deinen Code
 dt-exec rosrun example_ros_wheels driver_cpp_node
 
 
