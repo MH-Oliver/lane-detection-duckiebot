@@ -67,7 +67,7 @@ int driver(int argc, char **argv) {
         publisher.publish(drive_msg);
 
         // Entspricht time.sleep(0.1)
-        ros::Duration(0.1).sleep();
+        ros::Duration(0.01).sleep();
     }
 
     // Entspricht rospy.on_shutdown(...)
