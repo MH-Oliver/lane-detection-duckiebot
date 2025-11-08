@@ -42,7 +42,7 @@ int driver(int argc, char **argv) {
 
     // === NEUES TOPIC & NEUER NACHRICHTENTYP ===
     // Wir verwenden das exakte Topic aus deinem "rosnode info" Log
-    std::string topic_name = "/zeta/car_cmd_switch_node/cmd";
+    std::string topic_name = "/zeta/joy_mapper_node/car_cmd";
 
     ros::Publisher publisher = n.advertise<duckietown_msgs::Twist2DStamped>(topic_name, 1);
     // === ÄNDERUNG ENDE ===
