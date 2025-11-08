@@ -31,20 +31,20 @@ void stop_wheels(ros::Publisher& publisher) {
 int driver(int argc, char **argv) {
     // Entspricht robot_name: str = get_robot_name()
     // get_robot_name() liest die Umgebungsvariable VEHICLE_NAME
-    const char* robot_name_env = std::getenv("VEHICLE_NAME");
+    /*const char* robot_name_env = std::getenv("VEHICLE_NAME");
     if (robot_name_env == nullptr) {
         ROS_FATAL("Umgebungsvariable VEHICLE_NAME nicht gesetzt.");
         return 1; // Mit Fehler beenden
     }
     std::string robot_name = std::string(robot_name_env);
-    ROS_INFO("Robot name: %s", robot_name.c_str());
+    ROS_INFO("Robot name: %s", robot_name.c_str());*/
 
     // Entspricht rospy.init_node('driver', anonymous=True)
     ros::init(argc, argv, "driver", ros::init_options::AnonymousName);
     ros::NodeHandle n;
 
     // Entspricht publisher = rospy.Publisher(...)
-    std::string topic_name = "/" + robot_name + "/wheels_driver_node/wheels_cmd";
+    std::string topic_name = "/zeta/wheels_driver_node/wheels_cmd";
     ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_name, 1);
 
     // Kurze Pause, damit der Publisher sich verbinden kann (gute Praxis)
