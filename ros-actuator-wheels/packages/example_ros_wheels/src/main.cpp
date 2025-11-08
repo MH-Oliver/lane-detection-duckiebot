@@ -55,7 +55,7 @@ int driver(int argc, char **argv) {
     drive_msg.vel_left = SPEED;
     drive_msg.vel_right = SPEED;
 
-    ros::Rate loop_rate(200);
+    ros::Rate loop_rate(500);
 
     // Entspricht stime: float = time.time()
     ros::Time stime = ros::Time::now();
