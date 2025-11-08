@@ -49,7 +49,7 @@ int driver(int argc, char **argv) {
     drive_msg.vel_right = SPEED;
 
     // Eine saubere Frequenz von 30 Hz ist völlig ausreichend
-    ros::Rate loop_rate(30);
+    ros::Rate loop_rate(1000);
 
     ros::Time stime = ros::Time::now();
     ROS_INFO("Starte Fahrt auf Topic '%s' für %.1f Sekunden...", topic_name.c_str(), DURATION);
