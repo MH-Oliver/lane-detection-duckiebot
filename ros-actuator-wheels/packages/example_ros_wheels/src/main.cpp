@@ -55,6 +55,8 @@ int driver(int argc, char **argv) {
     drive_msg.vel_left = SPEED;
     drive_msg.vel_right = SPEED;
 
+    ros::Rate loop_rate(200);
+
     // Entspricht stime: float = time.time()
     ros::Time stime = ros::Time::now();
     ROS_INFO("Starte Fahrt für %.1f Sekunden...", DURATION);
@@ -67,7 +69,7 @@ int driver(int argc, char **argv) {
         publisher.publish(drive_msg);
 
         // Entspricht time.sleep(0.1)
-        ros::Duration(0.01).sleep();
+        loop_rate.sleep();
     }
 
     // Entspricht rospy.on_shutdown(...)
