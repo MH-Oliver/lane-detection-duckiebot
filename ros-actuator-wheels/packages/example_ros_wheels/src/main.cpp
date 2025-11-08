@@ -1,88 +1,83 @@
 #include <ros/ros.h>
-#include <duckietown_msgs/WheelsCmdStamped.h>
+// NEUER NACHRICHTENTYP:
+#include <duckietown_msgs/Twist2DStamped.h>
 #include <string>
-#include <cstdlib> // Für std::getenv
+#include <cstdlib>
 #include <ros/time.h>
 #include <ros/duration.h>
 
 // === Parameter ===
-// Entspricht DURATION: float = 20.0
 const double DURATION = 20.0;
-// Entspricht SPEED: float = 0.1
+// Dies ist jetzt die lineare Geschwindigkeit in m/s
 const double SPEED = 0.2;
 
 /**
- * @brief Entspricht der Python-Funktion `stop_wheels`.
- * Sendet einen (0, 0) Befehl und wartet 1 Sekunde.
- * @param publisher Der ROS-Publisher für die Radbefehle.
+ * @brief Sendet einen (0, 0) Befehl (Stop) an das High-Level Topic.
+ * @param publisher Der ROS-Publisher für die Steuerbefehle.
  */
-void stop_wheels(ros::Publisher& publisher) {
-    duckietown_msgs::WheelsCmdStamped msg;
-    msg.vel_left = 0.0;
-    msg.vel_right = 0.0;
+void stop_robot(ros::Publisher& publisher) {
+    duckietown_msgs::Twist2DStamped msg;
+    msg.header.stamp = ros::Time::now();
+    msg.v = 0.0;
+    msg.omega = 0.0;
     publisher.publish(msg);
-    // Entspricht time.sleep(1)
     ros::Duration(1.0).sleep();
 }
 
 /**
- * @brief Entspricht der Python-Funktion `driver`.
+ * @brief Haupt-Driver-Funktion
  */
 int driver(int argc, char **argv) {
-    // Entspricht robot_name: str = get_robot_name()
-    // get_robot_name() liest die Umgebungsvariable VEHICLE_NAME
-    /*const char* robot_name_env = std::getenv("VEHICLE_NAME");
+    // Umgebungsvariable VEHICLE_NAME wird immer noch benötigt
+    const char* robot_name_env = std::getenv("VEHICLE_NAME");
     if (robot_name_env == nullptr) {
-        ROS_FATAL("Umgebungsvariable VEHICLE_NAME nicht gesetzt.");
-        return 1; // Mit Fehler beenden
+        ROS_FATAL("Umgebungsvariable VEHICLE_NAME nicht gesetzt. (Mit -R [name] starten)");
+        return 1;
     }
     std::string robot_name = std::string(robot_name_env);
-    ROS_INFO("Robot name: %s", robot_name.c_str());*/
+    ROS_INFO("Robot name: %s", robot_name.c_str());
 
-    // Entspricht rospy.init_node('driver', anonymous=True)
     ros::init(argc, argv, "driver", ros::init_options::AnonymousName);
     ros::NodeHandle n;
 
-    // Entspricht publisher = rospy.Publisher(...)
-    std::string topic_name = "/zeta/wheels_driver_node/wheels_cmd";
-    ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_name, 1);
+    // === NEUES TOPIC & NEUER NACHRICHTENTYP ===
+    // Wir verwenden das exakte Topic aus deinem "rosnode info" Log
+    std::string topic_name = "/zeta/car_cmd_switch_node/cmd";
 
-    // Kurze Pause, damit der Publisher sich verbinden kann (gute Praxis)
+    ros::Publisher publisher = n.advertise<duckietown_msgs::Twist2DStamped>(topic_name, 1);
+    // === ÄNDERUNG ENDE ===
+
+    ROS_INFO("Warte auf Verbindung zum Publisher...");
     ros::Duration(0.5).sleep();
 
-    // Bereite die "drive_msg" vor, da sie sich nie ändert
-    duckietown_msgs::WheelsCmdStamped drive_msg;
-    drive_msg.vel_left = SPEED;
-    drive_msg.vel_right = SPEED;
+    // Bereite die "drive_msg" vor
+    duckietown_msgs::Twist2DStamped drive_msg;
+    drive_msg.v = SPEED;     // v = lineare Geschwindigkeit (geradeaus)
+    drive_msg.omega = 0.0;   // omega = Winkelgeschwindigkeit (keine Drehung)
 
-    ros::Rate loop_rate(500);
+    // Wir verwenden ros::Rate für eine saubere Schleife (z.B. 50 Hz)
+    ros::Rate loop_rate(50);
 
-    // Entspricht stime: float = time.time()
     ros::Time stime = ros::Time::now();
-    ROS_INFO("Starte Fahrt für %.1f Sekunden...", DURATION);
+    ROS_INFO("Starte Fahrt auf Topic '%s' für %.1f Sekunden...", topic_name.c_str(), DURATION);
 
-    // Entspricht der while-Schleife
-    // rospy.is_shutdown() -> ros::ok()
-    // time.time() - stime -> (ros::Time::now() - stime).toSec()
     while (ros::ok() && (ros::Time::now() - stime).toSec() < DURATION) {
-        // Entspricht publisher.publish(...)
+        // Wir müssen den Header-Zeitstempel bei jeder Sendung aktualisieren
+        drive_msg.header.stamp = ros::Time::now();
         publisher.publish(drive_msg);
 
-        // Entspricht time.sleep(0.1)
+        // Warte "den Rest" der 1/50 Sekunde
         loop_rate.sleep();
     }
 
-    // Entspricht rospy.on_shutdown(...)
-    // In C++ wird dieser Code einfach nach der Schleife ausgeführt,
-    // wenn ros::ok() false wird (durch Ctrl+C) oder die Zeit abläuft.
-    ROS_INFO("Dauer abgelaufen. Stoppe Räder.");
-    stop_wheels(publisher);
+    ROS_INFO("Dauer abgelaufen. Stoppe Roboter.");
+    stop_robot(publisher);
 
     return 0;
 }
 
 /**
- * @brief Entspricht `if __name__ == '__main__': driver()`
+ * @brief main
  */
 int main(int argc, char **argv) {
     try {
