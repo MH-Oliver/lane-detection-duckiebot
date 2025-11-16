@@ -7,16 +7,21 @@ find_package(catkin REQUIRED COMPONENTS
   duckietown_msgs
   sensor_msgs
   std_msgs
+  cv_bridge
 )
+
+find_package(OpenCV REQUIRED)
 
 catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 add_executable(driver_cpp_node src/main.cpp)
 
 target_link_libraries(driver_cpp_node
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )

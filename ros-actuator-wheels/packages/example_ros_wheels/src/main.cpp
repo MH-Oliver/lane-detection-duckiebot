@@ -1,79 +1,81 @@
 #include <ros/ros.h>
-#include <duckietown_msgs/WheelsCmdStamped.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/opencv.hpp> // Nötig für cv::Mat und cv::imwrite
 #include <string>
 #include <cstdlib> // Für std::getenv
-#include <ros/time.h>
-#include <ros/duration.h>
-
-// === Parameter ===
-const double DURATION = 20.0;
-const double SPEED = 0.2;
 
 /**
- * @brief Sendet einen (0, 0) Befehl und wartet 1 Sekunde.
- * @param publisher Der ROS-Publisher für die Radbefehle.
+ * C++-Äquivalent zur dt_robot_utils.get_robot_name()
+ * Holt den Roboternamen aus der Umgebungsvariable "VEHICLE_NAME".
  */
-void stop_wheels(ros::Publisher& publisher) {
-    duckietown_msgs::WheelsCmdStamped msg;
-    msg.header.stamp = ros::Time::now();
-    msg.vel_left = 0.0;
-    msg.vel_right = 0.0;
-    publisher.publish(msg);
-    ros::Duration(1.0).sleep();
-}
-
-/**
- * @brief Haupt-Driver-Funktion
- */
-int driver(int argc, char **argv) {
+std::string get_robot_name() {
     const char* robot_name_env = std::getenv("VEHICLE_NAME");
     if (robot_name_env == nullptr) {
-        ROS_FATAL("Umgebungsvariable VEHICLE_NAME nicht gesetzt. (Mit -R [name] starten)");
-        return 1;
+        ROS_ERROR("Umgebungsvariable 'VEHICLE_NAME' nicht gesetzt. Benutze 'default_robot'.");
+        return "default_robot";
     }
-    std::string robot_name = std::string(robot_name_env);
-    ROS_INFO("Robot name: %s", robot_name.c_str());
-
-    ros::init(argc, argv, "driver", ros::init_options::AnonymousName);
-    ros::NodeHandle n;
-
-    // Das direkte, Low-Level RÄDER-Topic
-    std::string topic_name = "/" + robot_name + "/wheels_driver_node/wheels_cmd";
-    ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_name, 1);
-
-    ros::Duration(0.5).sleep();
-
-    // Bereite die "drive_msg" vor
-    duckietown_msgs::WheelsCmdStamped drive_msg;
-    drive_msg.vel_left = SPEED;
-    drive_msg.vel_right = SPEED;
-
-    // Eine saubere Frequenz von 30 Hz ist völlig ausreichend
-    ros::Rate loop_rate(30);
-
-    ros::Time stime = ros::Time::now();
-    ROS_INFO("Starte Fahrt auf Topic '%s' für %.1f Sekunden...", topic_name.c_str(), DURATION);
-
-    while (ros::ok() && (ros::Time::now() - stime).toSec() < DURATION) {
-        drive_msg.header.stamp = ros::Time::now();
-        publisher.publish(drive_msg);
-        loop_rate.sleep();
-    }
-
-    ROS_INFO("Dauer abgelaufen. Stoppe Räder.");
-    stop_wheels(publisher);
-
-    return 0;
+    return std::string(robot_name_env);
 }
 
 /**
- * @brief main
+ * ROS-Callback-Funktion.
+ * Wird aufgerufen, wenn ein Bild empfangen wird.
  */
-int main(int argc, char **argv) {
-    try {
-        return driver(argc, argv);
-    } catch (ros::Exception& e) {
-        ROS_ERROR("ROS exception: %s", e.what());
-        return 1;
+void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
+    // Statische Variable, um sicherzustellen, dass dies nur einmal passiert
+    static bool firstImageSaved = false;
+
+    if (firstImageSaved) {
+        return; // Wir haben das Bild bereits gespeichert, nichts mehr tun.
     }
+
+    try {
+        // Dekodiere die komprimierte Bildnachricht in ein cv::Mat-Objekt
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        cv::Mat frame = cv_ptr->image;
+
+        // Definiere den Speicherpfad (im Container)
+        std::string save_path = "/tmp/first_frame.png";
+
+        // Speichere das Bild
+        if (cv::imwrite(save_path, frame)) {
+            ROS_INFO("Erstes Bild erfolgreich gespeichert unter: %s", save_path.c_str());
+            firstImageSaved = true; // Flag setzen, damit wir es nicht nochmal tun
+        } else {
+            ROS_ERROR("Konnte Bild nicht unter %s speichern.", save_path.c_str());
+        }
+
+        // Fahre den ROS-Node herunter, nachdem das Bild gespeichert wurde.
+        // Dies bewirkt, dass ros::spin() in der main()-Funktion beendet wird.
+        ros::shutdown();
+
+    } catch (cv_bridge::Exception& e) {
+        ROS_ERROR("cv_bridge Ausnahme: %s", e.what());
+    }
+}
+
+/**
+ * Hauptfunktion (minimal)
+ */
+int main(int argc, char** argv) {
+    // ROS-Node initialisieren
+    ros::init(argc, argv, "image_saver_node");
+    ros::NodeHandle nh;
+
+    // Roboternamen und Topic holen
+    std::string robot_name = get_robot_name();
+    std::string topic_name = "/" + robot_name + "/camera_node/image/compressed";
+    ROS_INFO("Abonniere Topic: %s", topic_name.c_str());
+
+    // Subscriber erstellen
+    ros::Subscriber sub = nh.subscribe(topic_name, 1, imageCallback);
+
+    // Warten, bis der Callback ros::shutdown() aufruft
+    // (d.h. bis das erste Bild gespeichert wurde)
+    ros::spin();
+
+    ROS_INFO("Node wird beendet.");
+    return 0;
 }
