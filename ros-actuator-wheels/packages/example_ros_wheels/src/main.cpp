@@ -30,7 +30,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     static bool is_shutting_down = false; // Verhindert Fehler beim Beenden
 
     // --- Konstanten für die Aufnahme ---
-    const double RECORD_DURATION_SEC = 20.0;
+    const double RECORD_DURATION_SEC = 40.0;
     // WICHTIG: Wir nehmen 20 FPS an. Dies ist eine Schätzung!
     // Die tatsächliche Framerate kann variieren.
     const double FPS = 20.0;
