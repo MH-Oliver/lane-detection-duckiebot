@@ -2,8 +2,8 @@
 // Created by root on 05.11.25.
 //
 
-#ifndef DOCKIBOT_DISPLAYFOURPICTURES_H
-#define DOCKIBOT_DISPLAYFOURPICTURES_H
+#ifndef DISPLAYFOURPICTURES_H
+#define DISPLAYFOURPICTURES_H
 #include <opencv2/opencv.hpp>
 #include <vector>
 using namespace cv;
@@ -41,4 +41,4 @@ private:
 
 
 
-#endif //DOCKIBOT_DISPLAYFOURPICTURES_H
+#endif //DISPLAYFOURPICTURES_H

@@ -21,7 +21,11 @@ set(SOURCES
         src/NOISEREDUCTION/NoiseReduction.cpp
         src/NOISEREDUCTION/NoiseReduction.h
         src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
-        src/FOURPICTURESDISPLAY/DisplayFourPictures.h)
+        src/FOURPICTURESDISPLAY/DisplayFourPictures.h
+        src/TRACKING/Tracking.cpp
+        src/TRACKING/Tracking.h
+        )
+        
 catkin_package()
 
 include_directories(

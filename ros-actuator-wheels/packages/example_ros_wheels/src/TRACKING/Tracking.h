@@ -1,3 +1,10 @@
+#ifndef TRACKING_H
+#define TRACKING_H
+#include <opencv2/opencv.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <vector>
+using namespace cv;
+using namespace std;
 class Tracking
 {
     //p entfernung vom ursprung und θ gleich winkel 
@@ -11,10 +18,15 @@ class Tracking
         //Tracking setzt das verwenden des alten (p,θ) um also Acc(p,θ)
 
 private:
+    KalmanFilter kf;
     /* data */
 public:
     Tracking(/* args */);
+    void drawRhoThetaLine(Mat& img, double rho, double theta, Scalar color, int thickness);
+    void generateHoughValuesAndTest();
+    double process(cv::Mat& visual_img,double p_current,double theta_current);
     ~Tracking();
 };
+#endif // TRACKING_H
 
 

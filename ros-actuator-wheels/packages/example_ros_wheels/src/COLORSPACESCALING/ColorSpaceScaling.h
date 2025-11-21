@@ -1,5 +1,5 @@
-#ifndef UNTITLED_COLORSPACESCALING_H
-#define UNTITLED_COLORSPACESCALING_H
+#ifndef COLORSPACESCALING_H
+#define COLORSPACESCALING_H
 #include <opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
@@ -21,4 +21,4 @@ public:
     static Mat CompleteRunCSS(Mat image);
 };
 
-#endif //UNTITLED_COLORSPACESCALING_H
+#endif //COLORSPACESCALING_H

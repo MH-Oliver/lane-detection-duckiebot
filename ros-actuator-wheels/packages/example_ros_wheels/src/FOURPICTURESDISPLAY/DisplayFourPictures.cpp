@@ -2,7 +2,7 @@
 // Created by root on 05.11.25.
 //
 
-#include "DisplayFourPictures.h"
+#include "../FOURPICTURESDISPLAY/DisplayFourPictures.h"
 vector<Mat> DisplayFourPictures::m_pictures;
 
 void DisplayFourPictures::addPictures(Mat image) {
