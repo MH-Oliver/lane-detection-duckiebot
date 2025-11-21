@@ -15,7 +15,7 @@ public:
     static void yuvscale();
 
     // NEUE SIGNATUR: Nimmt das YUV-Bild zum Lesen entgegen
-    static void drawLine( int k, int step, int y_line, int starlefside);
+    static void drawLine( int k, int step, int y_line, int starlefside,const Mat& yuvImage);
 
     static void verticalThreeFourthLine();
     static Mat CompleteRunCSS(Mat image);
