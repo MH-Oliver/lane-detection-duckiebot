@@ -15,8 +15,8 @@ class FuzzyCannyEdgeDetection {
 private:
 int m_NumberOfEdgesLastFrame = 10000;
 
-double m_UpperThreshold = 5e3;
-double m_LowerThreshold = UpperThreshold / 3;
+double m_UpperThreshold = 3000;
+double m_LowerThreshold = 1000;
 void fuzzyRefreshThreholds(int NumberofEdgesLastFrame);
 
 // Dreieckfunktion
