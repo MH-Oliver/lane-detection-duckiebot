@@ -60,12 +60,14 @@ void fuzzyRefreshThresholds (int NumberofEdgesLastFrame) {
 
 cv::Mat applyCannyEdgeDetection(cv::Mat image) {
 
-    //Canny Detection durchführen
+    // Canny Detection durchführen
     cv::Mat edges;
     cv::Canny(image, edges, m_LowerThreshold, m_UpperThreshold);
 
     // Anzahl der Kantenpixel zählen
     m_NumberEdgesLastFrame = cv::countNonZero(edges);
 
+	// Thresholds entsprechend der detektierten Kanten aktualisieren
+	fuzzyRefreshThresholds(m_NumberEdgesLastFrame);
     return edges;
 }
