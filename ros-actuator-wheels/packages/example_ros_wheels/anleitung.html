@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>anleitung</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">
+
+
+pre.terminal {
+background-color: #282c34; 
+padding: 15px;
+margin: 20px 0;
+border-radius: 8px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+overflow-x: auto;
+}
+
+
+pre.terminal code {
+color: #abb2bf; 
+font-family: 'Consolas', 'Courier New', monospace;
+font-size: 0.9em;
+white-space: pre-wrap; 
+}
+
+li code, p code {
+
+display: block; 
+background-color: #282c34; color: #abb2bf;
+padding: 15px;
+border-radius: 8px;
+font-family: 'Consolas', 'Courier New', monospace;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); 
+margin: 10px 0;
+overflow-x: auto;
+}
+</style>
+</head>
+<body>
+<h2 id="anleitung-duckiebot-ros-1-entwicklungsumgebung-html-final">🚀
+Anleitung: Duckiebot ROS 1 Entwicklungsumgebung (HTML-Final)</h2>
+<p>Diese Anleitung richtet die komplette C++-Umgebung mithilfe von VS
+Code Dev Containers ein.</p>
+<hr />
+<h3 id="voraussetzungen">1. ⚙️ Voraussetzungen</h3>
+<ol type="1">
+<li><strong>VS Code</strong> und <strong>Docker Desktop</strong> (oder
+Docker Engine) installieren.</li>
+<li><strong>(WICHTIG für C++!)</strong> Installiere im VS Code
+Marktplatz diese Erweiterungen: <strong>Dev Containers</strong>,
+<strong>C/C++ Extension Pack</strong>.</li>
+</ol>
+<hr />
+<h3 id="projekt-im-container-starten">2. 🖥️ Projekt im Container
+starten</h3>
+<ol type="1">
+<li><p><strong>Ordner öffnen und Fehler ignorieren:</strong> Öffne den
+Ordner <code>ros-actuator-wheels</code> in VS Code.
+<strong>IGNORIERE</strong> den anfänglichen Fehler “Could not find
+Catkin/OpenCV” – dieser verschwindet, sobald der Container
+startet.</p></li>
+<li><p><strong>Code holen:</strong> Git klonen und auf den richtigen
+Zweig wechseln. <strong>WICHTIG:</strong> Ersetze
+<code>https://github.com/MH-Oliver/lane-detection-duckiebot.git</code>
+durch die korrekte Adresse!</p>
+<pre class="root@"><code>git clone [https://github.com/MH-Oliver/lane-detection-duckiebot.git](https://github.com/MH-Oliver/lane-detection-duckiebot.git)
+cd lane-detection-duckiebot/ros-actuator-wheels
+git checkout dev-container-setup</code></pre></li>
+<li><p><strong>Container starten:</strong> Drücke <strong>F1</strong>
+und wähle
+<strong><code>Dev Containers: Reopen in Container</code></strong>.</p></li>
+</ol>
+<hr />
+<h3 id="workspace-und-bauen">3. ✅ Workspace und Bauen</h3>
+<ul>
+<li><p><strong>Manuelle Workspace-Auswahl (WICHTIG!)</strong></p>
+<ul>
+<li>Drücke <strong>F1</strong>. Wähle:
+<strong><code>CMake: Select a Kit</code></strong>
+(<code>[Unspecified]</code>).</li>
+<li>Drücke <strong>F1</strong>. Wähle:
+<strong><code>CMake: Select active folder</code></strong>
+(<code>example_ros_wheels</code>).</li>
+</ul></li>
+<li><p><strong>Projekt bauen:</strong> Führe im Terminal aus:</p>
+<pre class="root@82569905ba07:/ws#"><code>catkin_make</code></pre></li>
+<li><p><strong>C++-Erkennung aktualisieren:</strong></p>
+<ul>
+<li>Nach 100% erfolgreichem Build:</li>
+<li>Drücke <strong>F1</strong> und wähle
+<strong><code>Developer: Reload Window</code></strong>.</li>
+</ul></li>
+</ul>
+<hr />
+<h3 id="entwicklungs-workflow-testen-von-änderungen">4. 🔄
+Entwicklungs-Workflow (Testen von Änderungen)</h3>
+<p>Nachdem das Projekt einmal gebaut wurde, ist das Testen einfach.</p>
+<ol type="1">
+<li><p><strong>Code ändern:</strong> Bearbeite eine Deiner
+<code>.cpp</code>-Dateien in VS Code und speichere sie.</p></li>
+<li><p><strong>Neu kompilieren:</strong> Führe im Terminal (Terminal 2
+oder einem beliebigen anderen Terminal im <code>/ws</code>-Ordner) nur
+den <code>catkin_make</code> Befehl aus:
+<code>root@82569905ba07:/ws# catkin_make</code></p></li>
+<li><p><strong>Programm neu starten:</strong></p>
+<ul>
+<li><strong>Beende</strong> das laufende Programm
+(<code>rosrun...</code>) in Terminal 2 mit <strong>Strg +
+C</strong>.</li>
+<li><strong>Starte</strong> das Programm neu:</li>
+</ul>
+<pre class="root@82569905ba07:/ws#"><code>rosrun example_ros_wheels driver_cpp_node</code></pre></li>
+</ol>
+<hr />
+<h3 id="code-ausführen-erster-start">5. 🏃 Code ausführen (Erster
+Start)</h3>
+<ol type="1">
+<li><p><strong>Terminal 1 (Der Manager):</strong> Starte
+<code>roscore</code>. Lasse dieses Terminal geöffnet.</p>
+<pre class="root@82569905ba07:/ws#"><code>roscore</code></pre></li>
+<li><p><strong>Terminal 2 (Dein Programm):</strong> Öffne ein zweites
+Terminal.</p>
+<pre class="root@82569905ba07:/ws#"><code>source devel/setup.bash
+rosrun example_ros_wheels driver_cpp_node</code></pre></li>
+</ol>
+<hr />
+<h3 id="container-schließen">6. 🛑 Container schließen</h3>
+<ul>
+<li>Um den Container zu schließen und zu beenden, klicke unten links in
+VS Code auf das <strong>grüne <code>&gt;&lt;</code>
+Symbol</strong>.</li>
+<li>Wähle <strong><code>Close Remote Connection</code></strong>.</li>
+</ul>
+<p><strong>Wichtig:</strong> Beim nächsten Start musst Du nur
+<strong>Schritt 2</strong> und dann <strong>Schritt 3</strong> (ohne
+<code>Rebuild</code>) wiederholen.</p>
+</body>
+</html>
