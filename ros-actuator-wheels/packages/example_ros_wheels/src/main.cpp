@@ -6,6 +6,8 @@
 #include <cmath> // Für cos, sin
 #include <ros/time.h>
 
+#include "core/runtime_config.h"
+
 // === Parameter ===
 const double SPEED = 0.2;
 
@@ -140,7 +142,7 @@ int driver(int argc, char **argv) {
 
     ROS_INFO("Starte Lane Following PID fuer 20 Sekunden...");
 
-    while (ros::ok() && elapsed_sec < 20.0) {
+    while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
 
         elapsed_sec = (ros::Time::now() - start_time).toSec();
 

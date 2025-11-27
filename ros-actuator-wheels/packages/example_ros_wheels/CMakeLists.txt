@@ -12,10 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package()
 
 include_directories(
+  ${PROJECT_SOURCE_DIR}/src
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(driver_cpp_node src/main.cpp)
+add_executable(driver_cpp_node
+    src/main.cpp
+    src/core/runtime_config.cpp
+)
 
 target_link_libraries(driver_cpp_node
   ${catkin_LIBRARIES}
