@@ -165,7 +165,9 @@ int driver(int argc, char **argv) {
 
     ros::Rate loop_rate(30);
 
+    static ros::Time start_time;
     start_time = ros::Time::now();
+    double elapsed_sec = 0;
 
     ROS_INFO("Starte Lane Following PID...");
     while (ros::ok() && elapsed_sec < 30) {
