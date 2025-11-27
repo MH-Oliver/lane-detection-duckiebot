@@ -3,6 +3,12 @@
 #include "TRACKING/Tracking.h"
 using namespace std;
 using namespace cv;
+
+struct LaneLine {
+    double rho;   // Abstand zum Ursprung (Pixel)
+    double theta; // Winkel der Normalen (Bogenmaß)
+};
+
 class LineDetectionPipeline
 {
 private:
