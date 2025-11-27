@@ -165,9 +165,11 @@ int driver(int argc, char **argv) {
 
     ros::Rate loop_rate(30);
 
-    ROS_INFO("Starte Lane Following PID...");
+    start_time = ros::Time::now();
 
-    while (ros::ok()) {
+    ROS_INFO("Starte Lane Following PID...");
+    while (ros::ok() && elapsed_sec < 30) {
+        double elapsed_sec = (ros::Time::now() - start_time).toSec();
         // === SIMULATION DER LINIENERKENNUNG ===
         // In deinem echten Programm kommen diese Daten aus einem Subscriber (z.B. Lane Detector Node).
         // Hier simulieren wir Linien, um zu zeigen, wie die Funktion aufgerufen wird.
