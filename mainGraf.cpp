@@ -52,7 +52,7 @@ int main() {
 
         F.generateHoughValuesOntestvideowithTrapezoid(frame.clone());
         F.generateHoughValuesOntestvideowithTriangle(frame.clone());
-        if (waitKey(1) == 'q') break;
+        if (waitKey(0) == 'k') break;
     }
     cap.release();
     destroyAllWindows();
