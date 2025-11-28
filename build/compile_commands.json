@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/mnt/Daten/nicolanetest/src/build",
+  "command": "/usr/bin/g++-12  -I/mnt/Daten/nicolanetest/src/. -isystem /usr/include/opencv4 -g -std=gnu++14 -o CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o -c /mnt/Daten/nicolanetest/src/mainGraf.cpp",
+  "file": "/mnt/Daten/nicolanetest/src/mainGraf.cpp",
+  "output": "CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o"
+},
+{
+  "directory": "/mnt/Daten/nicolanetest/src/build",
+  "command": "/usr/bin/g++-12  -I/mnt/Daten/nicolanetest/src/. -isystem /usr/include/opencv4 -g -std=gnu++14 -o CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o -c /mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp",
+  "file": "/mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp",
+  "output": "CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o"
+},
+{
+  "directory": "/mnt/Daten/nicolanetest/src/build",
+  "command": "/usr/bin/g++-12  -I/mnt/Daten/nicolanetest/src/. -isystem /usr/include/opencv4 -g -std=gnu++14 -o CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o -c /mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp",
+  "file": "/mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp",
+  "output": "CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o"
+},
+{
+  "directory": "/mnt/Daten/nicolanetest/src/build",
+  "command": "/usr/bin/g++-12  -I/mnt/Daten/nicolanetest/src/. -isystem /usr/include/opencv4 -g -std=gnu++14 -o CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o -c /mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp",
+  "file": "/mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp",
+  "output": "CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o"
+},
+{
+  "directory": "/mnt/Daten/nicolanetest/src/build",
+  "command": "/usr/bin/g++-12  -I/mnt/Daten/nicolanetest/src/. -isystem /usr/include/opencv4 -g -std=gnu++14 -o CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o -c /mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp",
+  "file": "/mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp",
+  "output": "CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o"
+}
+]

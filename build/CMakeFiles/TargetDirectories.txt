@@ -1,0 +1,3 @@
+/mnt/Daten/nicolanetest/src/build/CMakeFiles/driver_cpp_node.dir
+/mnt/Daten/nicolanetest/src/build/CMakeFiles/edit_cache.dir
+/mnt/Daten/nicolanetest/src/build/CMakeFiles/rebuild_cache.dir
