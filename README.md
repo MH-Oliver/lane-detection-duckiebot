@@ -35,7 +35,7 @@ cd <DEIN_REPO_ORDNERNAME>
 
 Das Projekt lädt eine lokale Videodatei (duckitest.mp4). Da der Pfad im Code absolut angegeben ist, musst du ihn vor dem Kompilieren ändern!
 
-    Öffne die Datei: src/TRACKING/Tracking.cpp
+    Öffne die Datei: src/mainGraf.cpp
 
     Suche in der Funktion generateHoughValuesOntestvideo nach dieser Zeile:
     C++
