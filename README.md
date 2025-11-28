@@ -85,17 +85,3 @@ Es sollte sich ein Fenster öffnen, das die Spurerkennung mit den Debug-Ansichte
 
 ***
 
-### Wie du das auf GitHub hochlädst
-
-1.  Erstelle eine neue Datei in deinem Ordner (dort wo auch der `src` Ordner liegt).
-2.  Nenne sie `README.md`.
-3.  Füge den Text von oben ein.
-4.  Pushe sie mit in deinen Branch:
-
-```bash
-git add README.md
-git commit -m "Add documentation and build instructions"
-git push origin <dein-branch-name>
-
-
-Da Gemini Fehler machen kann, auch bei Informationen über Personen
