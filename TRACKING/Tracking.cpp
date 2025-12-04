@@ -189,9 +189,9 @@ void Tracking::applyAndDrawROITriangle(cv::Mat& img_edges, cv::Mat& img_visual) 
     // Hier stellst du ein, wie viel weggeschnitten wird.
     vector<Point> roi_points;
    // roi_points.push_back(Point(0, h));           // Links Unten
-    roi_points.push_back(Point(w/2, h));           // Rechts Unten
-    roi_points.push_back(Point(w, h * 0.45));    // Rechts Oben (45% der Höhe)
-    roi_points.push_back(Point(0, h * 0.45));    // Links Oben  (45% der Höhe)
+    roi_points.push_back(Point(w/2, h /5));           // Rechts Unten
+    roi_points.push_back(Point(w, h));    // Rechts Oben (45% der Höhe)
+    roi_points.push_back(Point(0, h));    // Links Oben  (45% der Höhe)
 
     // --- 2. MASKIERUNG (Für das Kantenbild) ---
     // Erstelle schwarze Maske
@@ -421,21 +421,31 @@ void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     
 }
         // ---------------------------------------------------------
-   double Tracking::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
-    
+   vector<LaneLine> Tracking::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
+    vector<LaneLine> lines;
+    LaneLine newLine;
     // --- LINKE LINIE ---
     kfLeft.predict(); // Immer vorhersagen!
     if (hasLeft) {
         Mat measurement = (Mat_<double>(2, 1) << rhoL, thetaL);
         kfLeft.correct(measurement);
-        
+        newLine.rho=rhoL;
+        newLine.theta=thetaL;
+        lines.push_back(newLine);
         // Rohdaten zeichnen (Dünn Rot)
         drawRhoThetaLine(visual_img, rhoL, thetaL, Scalar(0, 0, 255), 1);
+    }else{
+        double fRhoL = kfLeft.statePost.at<double>(0);
+        double fThetaL = kfLeft.statePost.at<double>(1);
+        newLine.rho=fRhoL;
+        newLine.theta=fThetaL;
+        lines.push_back(newLine);
+        // Gefilterte Linke Linie zeichnen (Dick Grün)
+    
+        drawRhoThetaLine(visual_img, fRhoL, fThetaL, Scalar(0, 255, 0), 3);
     }
-    // Gefilterte Linke Linie zeichnen (Dick Grün)
-    double fRhoL = kfLeft.statePost.at<double>(0);
-    double fThetaL = kfLeft.statePost.at<double>(1);
-    drawRhoThetaLine(visual_img, fRhoL, fThetaL, Scalar(0, 255, 0), 3);
+    
+    
 
 
     // --- RECHTE LINIE ---
@@ -443,14 +453,22 @@ void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     if (hasRight) {
         Mat measurement = (Mat_<double>(2, 1) << rhoR, thetaR);
         kfRight.correct(measurement);
-
+        newLine.rho=rhoR;
+        newLine.theta=thetaR;
+        lines.push_back(newLine);
         // Rohdaten zeichnen (Dünn Blau)
         drawRhoThetaLine(visual_img, rhoR, thetaR, Scalar(255, 0, 0), 1);
-    }
-    // Gefilterte Rechte Linie zeichnen (Dick Magenta)
-    double fRhoR = kfRight.statePost.at<double>(0);
-    double fThetaR = kfRight.statePost.at<double>(1);
+    }else{
+        double fRhoR = kfRight.statePost.at<double>(0);
+        double fThetaR = kfRight.statePost.at<double>(1);
+        newLine.rho=fRhoR;
+        newLine.theta=fThetaR;
+        lines.push_back(newLine);
+        // Gefilterte Rechte Linie zeichnen (Dick Magenta)
+    
     drawRhoThetaLine(visual_img, fRhoR, fThetaR, Scalar(255, 0, 255), 3);
+    }
+    
 
-    return 0.0;
+    return lines;
 }

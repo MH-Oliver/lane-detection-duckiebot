@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/Daten/nicolanetest/src
+CMAKE_SOURCE_DIR = /home/lu/lanedetect/lane-detection-duckiebot
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/Daten/nicolanetest/src/build
+CMAKE_BINARY_DIR = /home/lu/lanedetect/lane-detection-duckiebot/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/driver_cpp_node.dir/depend.make
@@ -70,74 +70,74 @@ include CMakeFiles/driver_cpp_node.dir/progress.make
 include CMakeFiles/driver_cpp_node.dir/flags.make
 
 CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o: CMakeFiles/driver_cpp_node.dir/flags.make
-CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o: /mnt/Daten/nicolanetest/src/mainGraf.cpp
+CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o: /home/lu/lanedetect/lane-detection-duckiebot/mainGraf.cpp
 CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o: CMakeFiles/driver_cpp_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o -MF CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o -c /mnt/Daten/nicolanetest/src/mainGraf.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o -MF CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o -c /home/lu/lanedetect/lane-detection-duckiebot/mainGraf.cpp
 
 CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.i"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/Daten/nicolanetest/src/mainGraf.cpp > CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lu/lanedetect/lane-detection-duckiebot/mainGraf.cpp > CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.i
 
 CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.s"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/Daten/nicolanetest/src/mainGraf.cpp -o CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lu/lanedetect/lane-detection-duckiebot/mainGraf.cpp -o CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.s
 
 CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o: CMakeFiles/driver_cpp_node.dir/flags.make
-CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o: /mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp
+CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o: /home/lu/lanedetect/lane-detection-duckiebot/COLORSPACESCALING/ColorSpaceScaling.cpp
 CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o: CMakeFiles/driver_cpp_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o -MF CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o -c /mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o -MF CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o -c /home/lu/lanedetect/lane-detection-duckiebot/COLORSPACESCALING/ColorSpaceScaling.cpp
 
 CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.i"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp > CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lu/lanedetect/lane-detection-duckiebot/COLORSPACESCALING/ColorSpaceScaling.cpp > CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.i
 
 CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.s"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp -o CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lu/lanedetect/lane-detection-duckiebot/COLORSPACESCALING/ColorSpaceScaling.cpp -o CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.s
 
 CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o: CMakeFiles/driver_cpp_node.dir/flags.make
-CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o: /mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp
+CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o: /home/lu/lanedetect/lane-detection-duckiebot/NOISEREDUCTION/NoiseReduction.cpp
 CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o: CMakeFiles/driver_cpp_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o -MF CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o -c /mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o -MF CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o -c /home/lu/lanedetect/lane-detection-duckiebot/NOISEREDUCTION/NoiseReduction.cpp
 
 CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.i"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp > CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lu/lanedetect/lane-detection-duckiebot/NOISEREDUCTION/NoiseReduction.cpp > CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.i
 
 CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.s"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp -o CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lu/lanedetect/lane-detection-duckiebot/NOISEREDUCTION/NoiseReduction.cpp -o CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.s
 
 CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o: CMakeFiles/driver_cpp_node.dir/flags.make
-CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o: /mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
+CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o: /home/lu/lanedetect/lane-detection-duckiebot/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
 CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o: CMakeFiles/driver_cpp_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o -MF CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o -c /mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o -MF CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o -c /home/lu/lanedetect/lane-detection-duckiebot/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
 
 CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.i"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp > CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lu/lanedetect/lane-detection-duckiebot/FOURPICTURESDISPLAY/DisplayFourPictures.cpp > CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.i
 
 CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.s"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp -o CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lu/lanedetect/lane-detection-duckiebot/FOURPICTURESDISPLAY/DisplayFourPictures.cpp -o CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.s
 
 CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o: CMakeFiles/driver_cpp_node.dir/flags.make
-CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o: /mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp
+CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o: /home/lu/lanedetect/lane-detection-duckiebot/TRACKING/Tracking.cpp
 CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o: CMakeFiles/driver_cpp_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o -MF CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o -c /mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o -MF CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o.d -o CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o -c /home/lu/lanedetect/lane-detection-duckiebot/TRACKING/Tracking.cpp
 
 CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.i"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp > CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lu/lanedetect/lane-detection-duckiebot/TRACKING/Tracking.cpp > CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.i
 
 CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.s"
-	/usr/bin/g++-12 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp -o CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lu/lanedetect/lane-detection-duckiebot/TRACKING/Tracking.cpp -o CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.s
 
 # Object files for target driver_cpp_node
 driver_cpp_node_OBJECTS = \
@@ -212,7 +212,7 @@ driver_cpp_node: /usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.6.0
 driver_cpp_node: /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.6.0
 driver_cpp_node: /usr/lib/x86_64-linux-gnu/libopencv_core.so.4.6.0
 driver_cpp_node: CMakeFiles/driver_cpp_node.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/mnt/Daten/nicolanetest/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable driver_cpp_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable driver_cpp_node"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/driver_cpp_node.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -224,6 +224,6 @@ CMakeFiles/driver_cpp_node.dir/clean:
 .PHONY : CMakeFiles/driver_cpp_node.dir/clean
 
 CMakeFiles/driver_cpp_node.dir/depend:
-	cd /mnt/Daten/nicolanetest/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/Daten/nicolanetest/src /mnt/Daten/nicolanetest/src /mnt/Daten/nicolanetest/src/build /mnt/Daten/nicolanetest/src/build /mnt/Daten/nicolanetest/src/build/CMakeFiles/driver_cpp_node.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/lu/lanedetect/lane-detection-duckiebot/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/lu/lanedetect/lane-detection-duckiebot /home/lu/lanedetect/lane-detection-duckiebot /home/lu/lanedetect/lane-detection-duckiebot/build /home/lu/lanedetect/lane-detection-duckiebot/build /home/lu/lanedetect/lane-detection-duckiebot/build/CMakeFiles/driver_cpp_node.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/driver_cpp_node.dir/depend
 

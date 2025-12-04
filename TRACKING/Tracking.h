@@ -6,6 +6,10 @@
 #include "../FOURPICTURESDISPLAY/DisplayFourPictures.h"
 using namespace cv;
 using namespace std;
+struct LaneLine {
+    double rho;   // Abstand zum Ursprung (Pixel)
+    double theta; // Winkel der Normalen (Bogenmaß)
+};
 class Tracking
 {
     //p entfernung vom ursprung und θ gleich winkel 
@@ -31,7 +35,7 @@ public:
     void generateHoughValuesAndTest();
     void generateHoughValuesOntestvideowithTriangle(Mat img);
     void generateHoughValuesOntestvideowithTrapezoid(Mat img );
-    double process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight);
+    vector<LaneLine> process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight);
     ~Tracking();
 };
 #endif // TRACKING_H

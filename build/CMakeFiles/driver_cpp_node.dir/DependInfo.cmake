@@ -8,11 +8,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/mnt/Daten/nicolanetest/src/COLORSPACESCALING/ColorSpaceScaling.cpp" "CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o.d"
-  "/mnt/Daten/nicolanetest/src/FOURPICTURESDISPLAY/DisplayFourPictures.cpp" "CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o.d"
-  "/mnt/Daten/nicolanetest/src/NOISEREDUCTION/NoiseReduction.cpp" "CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o.d"
-  "/mnt/Daten/nicolanetest/src/TRACKING/Tracking.cpp" "CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o.d"
-  "/mnt/Daten/nicolanetest/src/mainGraf.cpp" "CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o.d"
+  "/home/lu/lanedetect/lane-detection-duckiebot/COLORSPACESCALING/ColorSpaceScaling.cpp" "CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/COLORSPACESCALING/ColorSpaceScaling.cpp.o.d"
+  "/home/lu/lanedetect/lane-detection-duckiebot/FOURPICTURESDISPLAY/DisplayFourPictures.cpp" "CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/FOURPICTURESDISPLAY/DisplayFourPictures.cpp.o.d"
+  "/home/lu/lanedetect/lane-detection-duckiebot/NOISEREDUCTION/NoiseReduction.cpp" "CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/NOISEREDUCTION/NoiseReduction.cpp.o.d"
+  "/home/lu/lanedetect/lane-detection-duckiebot/TRACKING/Tracking.cpp" "CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/TRACKING/Tracking.cpp.o.d"
+  "/home/lu/lanedetect/lane-detection-duckiebot/mainGraf.cpp" "CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o" "gcc" "CMakeFiles/driver_cpp_node.dir/mainGraf.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
