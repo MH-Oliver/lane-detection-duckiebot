@@ -17,20 +17,18 @@ public:
 
   // 2. Die öffentliche "getInstance" Methode
   static DisplayFourPictures& getInstance() {
-    // 1. Die einzige Instanz wird hier als "static" deklariert.
-    //    Sie wird nur beim allerersten Aufruf von getInstance() erstellt.
-    //    Dies ist seit C++11 garantiert thread-sicher.
-    static DisplayFourPictures instance;
-
-    return instance;
-  }
-
+        static DisplayFourPictures instance;
+        return instance;
+    }
+// NEUE FUNKTION: Vergleicht Trapez vs. Dreieck ROI
+    static void showROIComparison(Mat image);
   static void addPictures(Mat image);
 
 private:
   static vector<Mat> m_pictures;
   // 0. Der Konstruktor ist private!
   DisplayFourPictures() {
+    
     // Konstruktor-Logik hier (wird nur einmal ausgeführt)
     std::cout << "Singleton-Instanz erstellt!" << std::endl;
   }

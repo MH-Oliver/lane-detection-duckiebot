@@ -2,10 +2,10 @@
 // Created by root on 05.11.25.
 //
 
-#include "../FOURPICTURESDISPLAY/DisplayFourPictures.h"
+#include "DisplayFourPictures.h"
 vector<Mat> DisplayFourPictures::m_pictures;
 
-void DisplayFourPictures::addPictures(Mat image) {
+void DisplayFourPictures::addPictures(Mat image){
     m_pictures.push_back(image.clone());
     if (m_pictures.size()==4) {
         Size grid_size(640, 480);
@@ -37,4 +37,51 @@ void DisplayFourPictures::addPictures(Mat image) {
         m_pictures.clear();
 
     }
+ }
+    void DisplayFourPictures::showROIComparison(Mat image) {
+// 1. Bild in den Puffer legen
+    m_pictures.push_back(image.clone());
+
+    // 2. Warten bis 4 Bilder da sind
+    if (m_pictures.size() == 4) {
+        
+        // Zielgröße festlegen (damit das Fenster nicht riesig wird)
+        Size grid_size(480, 360); 
+
+        // --- VORVERARBEITUNG (Loop über alle 4 Bilder) ---
+        for (int i = 0; i < 4; i++) {
+            // A) Falls Graustufenbild (z.B. Canny Output) -> In BGR umwandeln
+            // Das verhindert Abstürze bei hconcat
+            if (m_pictures[i].channels() == 1) {
+                cvtColor(m_pictures[i], m_pictures[i], COLOR_GRAY2BGR);
+            }
+            
+            // B) Auf einheitliche Größe bringen
+            if (m_pictures[i].size() != grid_size) {
+                resize(m_pictures[i], m_pictures[i], grid_size, 0, 0, INTER_AREA);
+            }
+        }
+
+        // --- ZUSAMMENBAU DES GITTERS ---
+        Mat row_top, row_bottom, final_grid;
+
+        // Reihe 1: Bild 0 und 1
+        hconcat(m_pictures[0], m_pictures[1], row_top);
+        // Reihe 2: Bild 2 und 3
+        hconcat(m_pictures[2], m_pictures[3], row_bottom);
+        // Spalte: Reihe 1 über Reihe 2
+        vconcat(row_top, row_bottom, final_grid);
+
+        // --- ANZEIGE ---
+        imshow("Debug Monitor (Trapez vs Dreieck)", final_grid);
+
+        // WICHTIG: Nur 1ms warten!
+        // waitKey(0) würde das Video anhalten (Freeze).
+        // destroyAllWindows() würde das Fenster flackern lassen.
+        waitKey(50); 
+
+        // --- PUFFER LEEREN ---
+        m_pictures.clear();
+    }
+
 }
