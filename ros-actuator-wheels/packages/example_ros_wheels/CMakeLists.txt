@@ -25,6 +25,9 @@ add_executable(driver_cpp_node
     src/main.cpp
     src/core/runtime_config.cpp
     src/core/TRACKING/Tracking.cpp
+    src/core/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
+    src/core/COLORSPACESCALING/ColorSpaceScaling.cpp
+    src/core/NOISEREDUCTION/NoiseReduction.cpp
 )
 
 target_link_libraries(driver_cpp_node
