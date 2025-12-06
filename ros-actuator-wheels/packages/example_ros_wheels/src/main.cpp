@@ -1,31 +1,35 @@
 #include <ros/ros.h>
 #include <duckietown_msgs/WheelsCmdStamped.h>
+#include <sensor_msgs/CompressedImage.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
+#include <opencv2/opencv.hpp>
+
 #include <string>
 #include <cstdlib>
 #include <algorithm>
-#include <cmath> // Für cos, sin
-#include <ros/time.h>
+#include <cmath>
+#include <vector>
 
+// Eigene Header
 #include "core/runtime_config.h"
+#include "core/TRACKING/Tracking.h" // Hier ist jetzt struct LaneLine definiert
+
+using namespace cv;
+using namespace std;
 
 // === Parameter ===
 const double SPEED = 0.2;
 
-// PID Parameter (Müssen am echten Roboter getunt werden!)
-const double KP = 0.5;  // Proportional-Anteil
-const double KI = 0.00; // Integral-Anteil
-const double KD = 0.1;  // Derivative-Anteil
+// PID Parameter
+const double KP = 0.5;
+const double KI = 0.00;
+const double KD = 0.1;
 
 // Bild Dimensionen
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
 const int LOOKAHEAD_Y = 350;
-
-// Struktur für eine Linie (Hough-Transform Format)
-struct LaneLine {
-    double rho;   // Abstand zum Ursprung (Pixel)
-    double theta; // Winkel der Normalen (Bogenmaß)
-};
 
 // Struktur für den PID-Speicher
 struct PIDState {
@@ -36,10 +40,45 @@ struct PIDState {
     PIDState() : prev_error(0), integral(0), last_time(ros::Time(0)) {}
 };
 
-// Globale Instanz für den PID-Zustand
+// Globale Variablen
 PIDState pid_state;
+Mat g_current_frame;          // Speichert das aktuellste Bild
+bool g_has_new_frame = false; // Flag, ob ein neues Bild da ist
+string g_robot_name;
+
+/**
+ * Holt den Roboternamen sicher aus der Umgebungsvariable
+ */
+string get_robot_name() {
+    const char* robot_name_env = std::getenv("VEHICLE_NAME");
+    if (!robot_name_env) {
+        ROS_ERROR("VEHICLE_NAME nicht gesetzt. Nutze 'default'.");
+        return "default";
+    }
+    return string(robot_name_env);
+}
+
+/**
+ * Callback für Kamerabilder
+ */
+void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
+    try {
+        // Konvertiere ROS-Nachricht zu OpenCV Mat (BGR8 Format)
+        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+        // Speichere das Bild in der globalen Variable für den Main-Loop
+        g_current_frame = cv_ptr->image.clone();
+        g_has_new_frame = true;
+
+    } catch (cv_bridge::Exception& e) {
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+    }
+}
+
+// === Hilfsfunktionen für Steuerung (Unverändert) ===
 
 double get_x_at_y(const LaneLine& line, int y) {
+    // Schutz vor Division durch Null bei fast vertikalen Linien (cos(90) = 0)
     if (std::abs(std::cos(line.theta)) < 0.001) {
         return IMG_WIDTH / 2.0;
     }
@@ -77,13 +116,18 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
+
+    // Ziel: Mitte der Fahrbahn
     double lane_center_x = (x_left + x_right) / 2.0;
     double target_x = IMG_WIDTH / 2.0;
+
     double error = lane_center_x - target_x;
 
+    // PID Berechnung
     double P = KP * error;
 
     pid_state.integral += error * dt;
+    // Anti-Windup
     if (pid_state.integral > 1000) pid_state.integral = 1000;
     if (pid_state.integral < -1000) pid_state.integral = -1000;
     double I = KI * pid_state.integral;
@@ -106,33 +150,41 @@ void stop_wheels(ros::Publisher& publisher) {
     msg.vel_left = 0.0;
     msg.vel_right = 0.0;
     publisher.publish(msg);
-    // Kleines Sleep damit der Befehl sicher rausgeht
     ros::Duration(1.0).sleep();
 }
 
+// === MAIN DRIVER ===
+
 int driver(int argc, char **argv) {
-    const char* robot_name_env = std::getenv("VEHICLE_NAME");
-    if (!robot_name_env) {
-        ROS_FATAL("VEHICLE_NAME nicht gesetzt.");
-        return 1;
-    }
-    std::string robot_name = std::string(robot_name_env);
+    g_robot_name = get_robot_name();
 
     ros::init(argc, argv, "lane_follower_driver", ros::init_options::AnonymousName);
     ros::NodeHandle n;
 
-    std::string topic_name = "/" + robot_name + "/wheels_driver_node/wheels_cmd";
-    ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_name, 1);
+    // 1. Publisher für Räder
+    string topic_wheels = "/" + g_robot_name + "/wheels_driver_node/wheels_cmd";
+    ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_wheels, 1);
+
+    // 2. Subscriber für Kamera
+    string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
+    ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
+    ROS_INFO("Abonniere Kamera: %s", topic_cam.c_str());
+
+    // 3. Tracking Instanz erstellen
+    Tracking tracker;
+    ROS_INFO("Tracking initialisiert.");
 
     // Warten bis Verbindung steht
-    ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
 
+    // Loop Rate (30 Hz - schnell genug um Callbacks zu fangen)
     ros::Rate loop_rate(30);
 
-    // Zeitmessung initialisieren
-    ros::Time start_time = ros::Time::now();
+    // Timer für die Bildverarbeitung (0.5s Takt)
+    ros::Time last_process_time = ros::Time::now();
+    const double PROCESS_INTERVAL = 0.5; // Sekunden
 
-    // Sicherstellen, dass wir keine 0-Zeit bekommen (passiert manchmal beim Start)
+    ros::Time start_time = ros::Time::now();
     while (start_time.toSec() == 0) {
         start_time = ros::Time::now();
         ros::Duration(0.01).sleep();
@@ -140,24 +192,49 @@ int driver(int argc, char **argv) {
 
     double elapsed_sec = 0;
 
-    ROS_INFO("Starte Lane Following PID fuer 20 Sekunden...");
+    ROS_INFO("Starte Autonomous Lane Following...");
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
+        // WICHTIG: Callbacks verarbeiten (Bild empfangen)
+        ros::spinOnce();
 
         elapsed_sec = (ros::Time::now() - start_time).toSec();
+        double time_since_process = (ros::Time::now() - last_process_time).toSec();
 
-        // === SIMULATION DATEN ===
-        LaneLine line_L;
-        line_L.rho = 100;
-        line_L.theta = 0.1;
+        // Prüfen: Sind 0.5s vergangen UND haben wir ein Bild?
+        if (time_since_process >= PROCESS_INTERVAL && g_has_new_frame && !g_current_frame.empty()) {
 
-        LaneLine line_R;
-        line_R.rho = 540;
-        line_R.theta = -0.1;
+            // --- BILDVERARBEITUNG START ---
 
-        follow_lane(publisher, line_L, line_R);
+            // Kopie erstellen, damit der Callback nicht dazwischenfunkt
+            Mat working_frame = g_current_frame.clone();
+            g_has_new_frame = false; // Flag resetten
 
-        ros::spinOnce();
+            // Tracking Algorithmus aufrufen
+            // Rückgabe: Vector mit LaneLines
+            // Laut Tracking.cpp: erst Left push_back, dann Right push_back
+            vector<LaneLine> lines = tracker.generateHoughValuesOntestvideowithTrapezoid(working_frame);
+
+            // Fehlerbehandlung: Sicherstellen, dass wir 2 Linien zurückbekommen haben
+            if (lines.size() >= 2) {
+                LaneLine line_L = lines[0];
+                LaneLine line_R = lines[1];
+
+                // Debug Info
+                // ROS_INFO("L: rho=%.2f th=%.2f | R: rho=%.2f th=%.2f", line_L.rho, line_L.theta, line_R.rho, line_R.theta);
+
+                // Räder steuern
+                follow_lane(publisher, line_L, line_R);
+            } else {
+                ROS_WARN("Tracking hat weniger als 2 Linien zurueckgegeben!");
+            }
+
+            // Timer zurücksetzen
+            last_process_time = ros::Time::now();
+
+            // --- BILDVERARBEITUNG ENDE ---
+        }
+
         loop_rate.sleep();
     }
 

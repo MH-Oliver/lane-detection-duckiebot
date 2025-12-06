@@ -315,7 +315,7 @@ void Tracking::generateHoughValuesOntestvideowithTriangle(Mat img) {
     
 
 }
-void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
+vector<LaneLine> Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     Mat image, gray, blurred, dst, color_dst;
     
 
@@ -408,17 +408,12 @@ void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
         // --- KALMAN FILTER UPDATE ---
         // WICHTIG: Wir rufen process() IMMER auf.
         // Die Logik, ob predict() oder correct() passiert, liegt jetzt IN der process-Funktion.
-        process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
+        return process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
 
         // Anzeige
             // Debug: Zeige das maskierte Kantenbild, um zu sehen, ob es passt
-       DisplayFourPictures::getInstance().showROIComparison(dst);
-        DisplayFourPictures::getInstance().showROIComparison(color_dst);
-        
-        
-
-    
-    
+       //DisplayFourPictures::getInstance().showROIComparison(dst);
+        //DisplayFourPictures::getInstance().showROIComparison(color_dst);
 }
         // ---------------------------------------------------------
    vector<LaneLine> Tracking::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
