@@ -24,6 +24,7 @@ include_directories(
 add_executable(driver_cpp_node
     src/main.cpp
     src/core/runtime_config.cpp
+    src/core/TRACKING/Tracking.cpp
 )
 
 target_link_libraries(driver_cpp_node
