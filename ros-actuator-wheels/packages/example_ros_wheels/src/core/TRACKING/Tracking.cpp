@@ -328,7 +328,7 @@ vector<LaneLine> Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) 
         // 2. Bild für Anzeige vorbereiten
         color_dst = image.clone();
         GaussianBlur(gray, blurred, Size(7, 7), 1.5);
-        Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
+        Canny(blurred, dst, 25, 75, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
         // Eine Funktion erledigt Maskierung UND Zeichnen gleichzeitig
         applyAndDrawROITrapezoid(dst, color_dst);
     
