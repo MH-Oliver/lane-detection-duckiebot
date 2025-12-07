@@ -123,6 +123,7 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     double error = lane_center_x - target_x;
 
+    ROS_INFO("Distanz: %.2f", error);
     // PID Berechnung
     double P = KP * error;
 
