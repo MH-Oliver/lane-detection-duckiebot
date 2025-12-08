@@ -117,6 +117,9 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
 
+    ROS_INFO("x_left: %.2f", x_left);
+    ROS_INFO("x_right: %.2f", x_right);
+
     // Ziel: Mitte der Fahrbahn
     double lane_center_x = (x_left + x_right) / 2.0;
     double target_x = IMG_WIDTH / 2.0;
