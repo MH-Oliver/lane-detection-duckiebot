@@ -117,45 +117,16 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
 
-    //ROS_INFO("x_left: %.2f", x_left);
-    //ROS_INFO("x_right: %.2f", x_right);
+    ROS_INFO("x_left: %.2f", x_left);
+    ROS_INFO("x_right: %.2f", x_right);
 
     // Ziel: Mitte der Fahrbahn
-    const double NOMINAL_LANE_WIDTH = 210.0;
-    const double deviation = 100;
-
-    double current_width = x_right - x_left;
-    double lane_center_x = 0.0;
-
-    bool width_is_valid = (current_width > NOMINAL_LANE_WIDTH-deviation && current_width < NOMINAL_LANE_WIDTH+deviation);
-
-    if (width_is_valid) {
-        // Fall A: Alles gut, beide Linien nutzen
-        lane_center_x = (x_left + x_right) / 2.0;
-    } else {
-        // Fall B: Irgendwas stimmt nicht (eine Linie ist gesprungen)
-        // Strategie: Wir vertrauen der Linie, die näher an ihrem "Heimat-Rand" ist.
-        // rechte Linie sollte nah an 0 sein, linke Linie nah an 640.
-
-        double dist_R_to_edge = std::abs(x_right - 0);
-        double dist_L_to_edge = std::abs(x_left - IMG_WIDTH);
-
-        if (dist_L_to_edge < dist_R_to_edge) {
-            // Wir vertrauen LINKS -> Ziel ist Links + halbe Breite
-            lane_center_x = x_left + (NOMINAL_LANE_WIDTH / 2.0);
-            // Optional: Warnung ausgeben (aber nicht zu oft)
-            ROS_WARN_THROTTLE(1, "Rechte Linie spinnt! Fahre nur nach Links.");
-        } else {
-            // Wir vertrauen RECHTS -> Ziel ist Rechts - halbe Breite
-            lane_center_x = x_right - (NOMINAL_LANE_WIDTH / 2.0);
-            ROS_WARN_THROTTLE(1, "Linke Linie spinnt! Fahre nur nach Rechts.");
-        }
-    }
+    double lane_center_x = (x_left + x_right) / 2.0;
     double target_x = IMG_WIDTH / 2.0;
 
     double error = lane_center_x - target_x;
 
-    //ROS_INFO("Distanz: %.2f", error);
+    ROS_INFO("Distanz: %.2f", error);
     // PID Berechnung
     double P = KP * error;
 
