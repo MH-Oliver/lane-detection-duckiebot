@@ -121,7 +121,36 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     ROS_INFO("x_right: %.2f", x_right);
 
     // Ziel: Mitte der Fahrbahn
-    double lane_center_x = (x_left + x_right) / 2.0;
+    const double NOMINAL_LANE_WIDTH = 240.0; // Calculated average from your log
+    double current_width = x_right - x_left;
+    double lane_center_x = 0.0;
+    // Sanity Check
+    bool width_is_valid = (current_width > 150 && current_width < 350);
+
+    if (width_is_valid) {
+        // Normal Driving
+        lane_center_x = (x_left + x_right) / 2.0;
+    } else {
+        // Fall B: Irgendwas stimmt nicht (eine Linie ist gesprungen)
+        // Strategie: Wir vertrauen der Linie, die näher an ihrem "Heimat-Rand" ist.
+        // rechte Linie sollte nah an 0 sein, linke Linie nah an 640.
+
+        double dist_R_to_edge = std::abs(x_right - 0);
+        double dist_L_to_edge = std::abs(x_left - IMG_WIDTH);
+
+        if (dist_L_to_edge < dist_R_to_edge) {
+            // Wir vertrauen LINKS -> Ziel ist Links + halbe Breite
+            lane_center_x = x_left + (NOMINAL_LANE_WIDTH / 2.0);
+            // Optional: Warnung ausgeben (aber nicht zu oft)
+            ROS_WARN_THROTTLE(1, "Rechte Linie spinnt! Fahre nur nach Links.");
+        } else {
+            // Wir vertrauen RECHTS -> Ziel ist Rechts - halbe Breite
+            lane_center_x = x_right - (NOMINAL_LANE_WIDTH / 2.0);
+            ROS_WARN_THROTTLE(1, "Linke Linie spinnt! Fahre nur nach Rechts.");
+        }
+
+        lane_center_x = lane_center_x/2.0;
+    }
     double target_x = IMG_WIDTH / 2.0;
 
     double error = lane_center_x - target_x;
@@ -221,14 +250,23 @@ int driver(int argc, char **argv) {
 
             // Fehlerbehandlung: Sicherstellen, dass wir 2 Linien zurückbekommen haben
             if (lines.size() >= 2) {
-                LaneLine line_L = lines[0];
-                LaneLine line_R = lines[1];
+                LaneLine lineA = lines[0];
+                LaneLine lineB = lines[1];
+                double xA = get_x_at_y(lineA, 480);
+                double xB = get_x_at_y(lineB, 480);
 
-                // Debug Info
-                // ROS_INFO("L: rho=%.2f th=%.2f | R: rho=%.2f th=%.2f", line_L.rho, line_L.theta, line_R.rho, line_R.theta);
+                LaneLine left_line, right_line;
 
-                // Räder steuern
-                follow_lane(publisher, line_L, line_R);
+                if (xA < xB) {
+                    left_line = lineA;
+                    right_line = lineB;
+                } else {
+                    left_line = lineB;
+                    right_line = lineA;
+                }
+
+                // Now call follow_lane with the CORRECTED lines
+                follow_lane(publisher, left_line, right_line);
             } else {
                 ROS_WARN("Tracking hat weniger als 2 Linien zurueckgegeben!");
             }
