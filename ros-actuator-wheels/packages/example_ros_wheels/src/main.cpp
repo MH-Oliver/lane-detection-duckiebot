@@ -123,7 +123,6 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     const double NOMINAL_LANE_WIDTH = 240.0;
     double current_width = x_right - x_left;
-    double lane_center_x = 0.0;
     // Sanity Check
     bool width_is_valid = (current_width > 150 && current_width < 350);
 
