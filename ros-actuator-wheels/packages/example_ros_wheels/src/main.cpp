@@ -117,8 +117,20 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
 
-    ROS_INFO("x_left: %.2f", x_left);
-    ROS_INFO("x_right: %.2f", x_right);
+    //ROS_INFO("x_left: %.2f", x_left);
+    //ROS_INFO("x_right: %.2f", x_right);
+
+
+    const double NOMINAL_LANE_WIDTH = 240.0;
+    double current_width = x_right - x_left;
+    double lane_center_x = 0.0;
+    // Sanity Check
+    bool width_is_valid = (current_width > 150 && current_width < 350);
+
+    if (!width_is_valid)
+    {
+        ROS_INFO("Invalid: %.2f", current_width);
+    }
 
     // Ziel: Mitte der Fahrbahn
     double lane_center_x = (x_left + x_right) / 2.0;
@@ -126,7 +138,7 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     double error = lane_center_x - target_x;
 
-    ROS_INFO("Distanz: %.2f", error);
+    //ROS_INFO("Distanz: %.2f", error);
     // PID Berechnung
     double P = KP * error;
 
