@@ -1,7 +1,12 @@
 
 #include "Tracking.h"
 
-    void Tracking::initKF(KalmanFilter &kf) {
+#include <iostream>
+#include <ostream>
+
+#include "../FuzzyCannyEdgeDetection.h"
+
+void Tracking::initKF(KalmanFilter &kf) {
   // Initialisiert einen Filter (genau wie dein alter Code, nur generisch)
     kf.init(4, 2, 0, CV_64F);
     
@@ -328,7 +333,9 @@ void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
         // 2. Bild für Anzeige vorbereiten
         color_dst = image.clone();
         GaussianBlur(gray, blurred, Size(7, 7), 1.5);
-        Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
+    cerr << "generate" << endl;
+        dst = FuzzyCanny.applyCannyEdgeDetection(blurred);
+        //Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
         // Eine Funktion erledigt Maskierung UND Zeichnen gleichzeitig
         applyAndDrawROITrapezoid(dst, color_dst);
     

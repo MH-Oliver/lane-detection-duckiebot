@@ -25,6 +25,8 @@ include_directories(
 # 3. Quellcode-Dateien definieren
 set(SOURCES 
     mainGraf.cpp
+        FuzzyCannyEdgeDetection.cpp
+        FuzzyCannyEdgeDetection.h
     # main.cpp # auskommentiert
     COLORSPACESCALING/ColorSpaceScaling.cpp
     COLORSPACESCALING/ColorSpaceScaling.h

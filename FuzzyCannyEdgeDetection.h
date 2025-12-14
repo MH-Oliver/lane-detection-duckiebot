@@ -13,11 +13,11 @@
 class FuzzyCannyEdgeDetection {
 
 private:
-int m_NumberOfEdgesLastFrame = 10000;
+int m_NumberOfLinesLastFrame = 500;
 
-double m_UpperThreshold = 5e3;
-double m_LowerThreshold = UpperThreshold / 3;
-void fuzzyRefreshThreholds(int NumberofEdgesLastFrame);
+double m_UpperThreshold = 150;
+double m_LowerThreshold = m_UpperThreshold / 3;
+void fuzzyRefreshThresholds(int NumberOfLinesLastFrame);
 
 // Dreieckfunktion
 double triangleMF(int x, int a, int b, int c);
@@ -29,7 +29,7 @@ double tooFewMF(int x, int start, int end);
 double tooManyMF(int x, int start, int end);
 
 public:
-cv::Mat applyCannyEdgeDetection(cv::Mat image);
+    cv::Mat applyCannyEdgeDetection(cv::Mat image);
 };
 
 #endif //FUZZYCANNYEDGEDETECTION_H

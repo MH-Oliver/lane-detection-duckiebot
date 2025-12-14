@@ -3,6 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <vector>
+#include "FuzzyCannyEdgedetection.h"
 #include "../FOURPICTURESDISPLAY/DisplayFourPictures.h"
 using namespace cv;
 using namespace std;
@@ -25,6 +26,7 @@ class Tracking
 private:
     KalmanFilter kfLeft;
     KalmanFilter kfRight;
+    FuzzyCannyEdgeDetection FuzzyCanny;
     /* data */
 public:
     Tracking(/* args */);
