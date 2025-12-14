@@ -2,7 +2,7 @@
 echo "Starte Code"
 
 mkdir build
-cd build/
+cd build
 cmake ..
 make
 ./driver_cpp_node
