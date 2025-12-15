@@ -15,27 +15,44 @@ message(STATUS "OpenCV found! Version: ${OpenCV_VERSION}")
 message(STATUS "OpenCV Include Dirs: ${OpenCV_INCLUDE_DIRS}")
 
 # 2. Include-Verzeichnisse
-# FIX FÜR DEN FEHLER: ${OpenCV_INCLUDE_DIRS} fügt "/usr/include/opencv4" hinzu.
-# Damit findet er "opencv2/opencv_modules.hpp".
+# Wir fügen "." hinzu, damit relative Includes funktionieren.
 include_directories(
-    ${OpenCV_INCLUDE_DIRS}
-    .
+        ${OpenCV_INCLUDE_DIRS}
+        .
 )
 
-# 3. Quellcode-Dateien definieren
-set(SOURCES 
-    mainGraf.cpp
-        FuzzyCannyEdgeDetection.cpp
-        FuzzyCannyEdgeDetection.h
-    # main.cpp # auskommentiert
-    COLORSPACESCALING/ColorSpaceScaling.cpp
-    COLORSPACESCALING/ColorSpaceScaling.h
-    NOISEREDUCTION/NoiseReduction.cpp
-    NOISEREDUCTION/NoiseReduction.h
-    FOURPICTURESDISPLAY/DisplayFourPictures.cpp
-    FOURPICTURESDISPLAY/DisplayFourPictures.h
-    TRACKING/Tracking.cpp
-    TRACKING/Tracking.h
+# 3. Quellcode-Dateien definieren (angepasst an neue Struktur)
+set(SOURCES
+        # Die Main-Datei
+        StandardMethodPipeline/main/main.cpp
+
+        # A: Color Space Scaling
+        StandardMethodPipeline/A/ColorSpaceScaling.cpp
+        StandardMethodPipeline/A/ColorSpaceScaling.h
+
+        # B: Noise Reduction
+        StandardMethodPipeline/B/NoiseReduction.cpp
+        StandardMethodPipeline/B/NoiseReduction.h
+
+        # C: Fuzzy Canny (Kanten)
+        StandardMethodPipeline/C/FuzzyCannyEdgeDetection.cpp
+        StandardMethodPipeline/C/FuzzyCannyEdgeDetection.h
+
+        # D: ROI Selection (Zuschneiden)
+        StandardMethodPipeline/D/RoiSelection.cpp
+        StandardMethodPipeline/D/RoiSelection.h
+
+        # E: Line Detection (Hough) - NEU
+        StandardMethodPipeline/E/LineDetection.cpp
+        StandardMethodPipeline/E/LineDetection.h
+
+        # F: Tracking (Kalman) - NEU
+        StandardMethodPipeline/F/Tracking.cpp
+        StandardMethodPipeline/F/Tracking.h
+
+        # Falls du DisplayFourPictures noch irgendwo nutzt, kannst du es einkommentieren:
+        # StandardMethodPipeline/FOURPICTURESDISPLAY/DisplayFourPictures.cpp
+        # StandardMethodPipeline/FOURPICTURESDISPLAY/DisplayFourPictures.h
 )
 
 # 4. Executable erstellen
@@ -43,5 +60,5 @@ add_executable(driver_cpp_node ${SOURCES})
 
 # 5. Bibliotheken verlinken
 target_link_libraries(driver_cpp_node
-    ${OpenCV_LIBS}
+        ${OpenCV_LIBS}
 )

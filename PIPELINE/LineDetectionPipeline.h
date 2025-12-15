@@ -1,17 +1,21 @@
+#include <vector>
+
 #include "COLORSPACESCALING/ColorSpaceScaling.h"
 #include "NOISEREDUCTION/NoiseReduction.h"
 #include "TRACKING/Tracking.h"
+#include "FuzzyCannyEdgeDetection.h"
 using namespace std;
 using namespace cv;
 class LineDetectionPipeline
 {
 private:
     /* data */
-    vector<double> m_oldfuzzystuff;//kp ob johannes das braucht
     vector<double> m_p_old; //oder ich das brauch
     vector<double> m_theta_old;//oder das
     ColorSpaceScaling A;
     NoiseReduction B;
+    FuzzyCannyEdgeDetection C;
+
     Tracking F;//tracking ist fertig enthält hilfsfunktion zum zeichnen und auch daten erstellen testdaten sind in TrackingTrainData
     //das attribute vom typ kalmanfilter speicherts seine alten rho und tehta werte aufrufbar unter 
     //pred_rho = kf.statePost.at<double>(0);

@@ -222,20 +222,20 @@ void Tracking::generateHoughValuesOntestvideowithTriangle(Mat img) {
         image=img.clone(); // BGR Bild laden
 
 
-        // 1. Vorverarbeitung
+        //A
         cvtColor(image, gray, COLOR_BGR2GRAY);
-        // 2. Bild für Anzeige vorbereiten
         color_dst = image.clone();
+
+        //B
         GaussianBlur(gray, blurred, Size(7, 7), 1.5);
+        //C
         Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
-        // Eine Funktion erledigt Maskierung UND Zeichnen gleichzeitig
+        //D
         applyAndDrawROITriangle(dst, color_dst);
     
     
         
-        
-
-        // 3. Hough Transformation
+        //E
         vector<Vec4i> lines;
         // Tipp: maxLineGap (letzter Wert) nicht zu hoch, sonst verbindet er Striche falsch
         HoughLinesP(dst, lines, 1, CV_PI / 180, 50, 30, 10);
@@ -322,160 +322,162 @@ void Tracking::generateHoughValuesOntestvideowithTriangle(Mat img) {
 }
 void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     Mat image, gray, blurred, dst, color_dst;
-    
 
-    
-        image=img.clone(); // BGR Bild laden
+    // 1. Initialisierung und Vorverarbeitung
+    image = img.clone();
+    cvtColor(image, gray, COLOR_BGR2GRAY);
 
-        
-        // 1. Vorverarbeitung
-        cvtColor(image, gray, COLOR_BGR2GRAY);
-        // 2. Bild für Anzeige vorbereiten
-        color_dst = image.clone();
-        GaussianBlur(gray, blurred, Size(7, 7), 1.5);
-    cerr << "generate" << endl;
-        dst = FuzzyCanny.applyCannyEdgeDetection(blurred);
-        //Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
-        // Eine Funktion erledigt Maskierung UND Zeichnen gleichzeitig
-        applyAndDrawROITrapezoid(dst, color_dst);
-    
+    // Bild für Anzeige vorbereiten
+    color_dst = image.clone();
 
-        
+    GaussianBlur(gray, blurred, Size(7, 7), 1.5);
 
-        // 3. Hough Transformation
-        vector<Vec4i> lines;
-        // Tipp: maxLineGap (letzter Wert) nicht zu hoch, sonst verbindet er Striche falsch
-        HoughLinesP(dst, lines, 1, CV_PI / 180, 50, 30, 10);
+    // Debug-Ausgabe (optional)
+    // cerr << "generate" << endl;
 
-        // Debug: Alle erkannten Linien blau malen
-        for (size_t i = 0; i < lines.size(); i++) {
-            line(color_dst, Point(lines[i][0], lines[i][1]),
-                 Point(lines[i][2], lines[i][3]), Scalar(255, 0, 0), 1);
+    // Kanten erkennen (Fuzzy Logic)
+    dst = FuzzyCanny.applyCannyEdgeDetection(blurred);
+
+    // ROI anwenden und zeichnen
+    applyAndDrawROITrapezoid(dst, color_dst);
+
+    // 2. Hough Transformation
+    vector<Vec4i> lines;
+    // Parameter: rho, theta, threshold, minLineLength, maxLineGap
+    HoughLinesP(dst, lines, 1, CV_PI / 180, 50, 30, 10);
+
+    // Debug: Alle erkannten Roh-Linien blau einzeichnen
+    for (size_t i = 0; i < lines.size(); i++) {
+        line(color_dst, Point(lines[i][0], lines[i][1]),
+             Point(lines[i][2], lines[i][3]), Scalar(255, 0, 0), 1);
+    }
+
+    // 3. Sortierung & Filterung (Links / Rechts)
+    double sumRhoL = 0, sumThetaL = 0;
+    int countL = 0;
+    double sumRhoR = 0, sumThetaR = 0;
+    int countR = 0;
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        Vec4i l = lines[i];
+
+        // Winkel und Rho berechnen
+        double angle_rad = atan2(l[3] - l[1], l[2] - l[0]);
+        double theta = angle_rad + CV_PI / 2.0;
+        double rho = l[0] * cos(theta) + l[1] * sin(theta);
+
+        // Normalisierung von Theta und Rho
+        if (theta < 0) {
+            theta += CV_PI;
+            rho = -rho;
         }
 
-        // --- SORTIERUNG LINKS / RECHTS ---
-        double sumRhoL = 0, sumThetaL = 0;
-        int countL = 0;
-        double sumRhoR = 0, sumThetaR = 0;
-        int countR = 0;
+        double angle_deg = theta * 180.0 / CV_PI;
 
-        for (size_t i = 0; i < lines.size(); i++) {
-            Vec4i l = lines[i];
-
-            // Winkel berechnen
-            double angle_rad = atan2(l[3] - l[1], l[2] - l[0]);
-            double theta = angle_rad + CV_PI / 2.0;
-            double rho = l[0] * cos(theta) + l[1] * sin(theta);
-
-            // Normalisierung
-            if (theta < 0) {
-                theta += CV_PI;
-                rho = -rho;
-            }
-
-            double angle_deg = theta * 180.0 / CV_PI;
-
-            // Filter: Horizontale Linien ignorieren (Horizont/Busse)
-            if (angle_deg > 70 && angle_deg < 110) {
-                continue;
-            }
-
-            // Sortieren nach Links/Rechts (90 Grad Grenze)
-            if (angle_deg < 90) { 
-                // Rechte Spur (neigt sich nach rechts)
-                sumRhoR += rho;
-                sumThetaR += theta;
-                countR++;
-            } else { 
-                // Linke Spur (neigt sich nach links)
-                sumRhoL += rho;
-                sumThetaL += theta;
-                countL++;
-            }
+        // Filter: Horizontale Linien ignorieren (z.B. Horizont, andere Autos)
+        if (angle_deg > 70 && angle_deg < 110) {
+            continue;
         }
 
-        // --- MITTELWERTE BERECHNEN ---
-        double avgRhoL = 0, avgThetaL = 0;
-        double avgRhoR = 0, avgThetaR = 0;
-        bool hasLeft = false;
-        bool hasRight = false;
-
-        if (countL > 0) {
-            avgRhoL = sumRhoL / countL;
-            avgThetaL = sumThetaL / countL;
-            hasLeft = true;
+        // Aufteilung nach Links/Rechts anhand des Winkels (90 Grad Grenze)
+        if (angle_deg < 90) {
+            // Rechte Spur (neigt sich nach rechts)
+            sumRhoR += rho;
+            sumThetaR += theta;
+            countR++;
+        } else {
+            // Linke Spur (neigt sich nach links)
+            sumRhoL += rho;
+            sumThetaL += theta;
+            countL++;
         }
+    }
 
-        if (countR > 0) {
-            avgRhoR = sumRhoR / countR;
-            avgThetaR = sumThetaR / countR;
-            hasRight = true;
-        }
+    // 4. Mittelwerte berechnen
+    double avgRhoL = 0, avgThetaL = 0;
+    double avgRhoR = 0, avgThetaR = 0;
+    bool hasLeft = false;
+    bool hasRight = false;
 
-        // --- KALMAN FILTER UPDATE ---
-        // WICHTIG: Wir rufen process() IMMER auf.
-        // Die Logik, ob predict() oder correct() passiert, liegt jetzt IN der process-Funktion.
-        process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
+    if (countL > 0) {
+        avgRhoL = sumRhoL / countL;
+        avgThetaL = sumThetaL / countL;
+        hasLeft = true;
+    }
 
-        // Anzeige
-            // Debug: Zeige das maskierte Kantenbild, um zu sehen, ob es passt
-       DisplayFourPictures::getInstance().showROIComparison(dst);
-        DisplayFourPictures::getInstance().showROIComparison(color_dst);
-        
-        
+    if (countR > 0) {
+        avgRhoR = sumRhoR / countR;
+        avgThetaR = sumThetaR / countR;
+        hasRight = true;
+    }
 
-    
-    
+    // 5. Kalman Filter Update & Visualisierung
+    process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
+
+    // 6. Endergebnisse anzeigen
+    DisplayFourPictures::getInstance().showROIComparison(dst);       // Maskiertes Kantenbild
+    DisplayFourPictures::getInstance().showROIComparison(color_dst); // Ergebnisbild mit Linien
 }
-        // ---------------------------------------------------------
-   vector<LaneLine> Tracking::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
+
+// ---------------------------------------------------------
+
+vector<LaneLine> Tracking::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
     vector<LaneLine> lines;
     LaneLine newLine;
+
     // --- LINKE LINIE ---
-    kfLeft.predict(); // Immer vorhersagen!
+    kfLeft.predict(); // Vorhersage Schritt (immer ausführen)
+
     if (hasLeft) {
+        // Messung vorhanden: Korrigieren
         Mat measurement = (Mat_<double>(2, 1) << rhoL, thetaL);
         kfLeft.correct(measurement);
-        newLine.rho=rhoL;
-        newLine.theta=thetaL;
+
+        newLine.rho = rhoL;
+        newLine.theta = thetaL;
         lines.push_back(newLine);
+
         // Rohdaten zeichnen (Dünn Rot)
         drawRhoThetaLine(visual_img, rhoL, thetaL, Scalar(0, 0, 255), 1);
-    }else{
+    } else {
+        // Keine Messung: Nutze Vorhersage (StatePost)
         double fRhoL = kfLeft.statePost.at<double>(0);
         double fThetaL = kfLeft.statePost.at<double>(1);
-        newLine.rho=fRhoL;
-        newLine.theta=fThetaL;
+
+        newLine.rho = fRhoL;
+        newLine.theta = fThetaL;
         lines.push_back(newLine);
+
         // Gefilterte Linke Linie zeichnen (Dick Grün)
-    
         drawRhoThetaLine(visual_img, fRhoL, fThetaL, Scalar(0, 255, 0), 3);
     }
-    
-    
-
 
     // --- RECHTE LINIE ---
-    kfRight.predict(); // Immer vorhersagen!
+    kfRight.predict(); // Vorhersage Schritt (immer ausführen)
+
     if (hasRight) {
+        // Messung vorhanden: Korrigieren
         Mat measurement = (Mat_<double>(2, 1) << rhoR, thetaR);
         kfRight.correct(measurement);
-        newLine.rho=rhoR;
-        newLine.theta=thetaR;
+
+        newLine.rho = rhoR;
+        newLine.theta = thetaR;
         lines.push_back(newLine);
+
         // Rohdaten zeichnen (Dünn Blau)
         drawRhoThetaLine(visual_img, rhoR, thetaR, Scalar(255, 0, 0), 1);
-    }else{
+    } else {
+        // Keine Messung: Nutze Vorhersage (StatePost)
         double fRhoR = kfRight.statePost.at<double>(0);
         double fThetaR = kfRight.statePost.at<double>(1);
-        newLine.rho=fRhoR;
-        newLine.theta=fThetaR;
+
+        newLine.rho = fRhoR;
+        newLine.theta = fThetaR;
         lines.push_back(newLine);
+
         // Gefilterte Rechte Linie zeichnen (Dick Magenta)
-    
-    drawRhoThetaLine(visual_img, fRhoR, fThetaR, Scalar(255, 0, 255), 3);
+        drawRhoThetaLine(visual_img, fRhoR, fThetaR, Scalar(255, 0, 255), 3);
     }
-    
 
     return lines;
 }
