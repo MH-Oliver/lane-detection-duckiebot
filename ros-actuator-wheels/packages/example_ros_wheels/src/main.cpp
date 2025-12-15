@@ -197,7 +197,7 @@ int driver(int argc, char **argv) {
 
     // Timer für die Bildverarbeitung (0.5s Takt)
     ros::Time last_process_time = ros::Time::now();
-    const double PROCESS_INTERVAL = 0.5; // Sekunden
+    const double PROCESS_INTERVAL = 0.25; // Sekunden
 
     ros::Time start_time = ros::Time::now();
     while (start_time.toSec() == 0) {
