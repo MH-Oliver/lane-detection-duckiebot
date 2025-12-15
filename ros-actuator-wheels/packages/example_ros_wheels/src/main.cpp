@@ -22,9 +22,9 @@ using namespace std;
 const double SPEED = 0.2;
 
 // PID Parameter
-const double KP = 0.5;
+const double KP = 0.25;
 const double KI = 0.00;
-const double KD = 0.1;
+const double KD = 0.4;
 
 // Bild Dimensionen
 const int IMG_WIDTH = 640;
