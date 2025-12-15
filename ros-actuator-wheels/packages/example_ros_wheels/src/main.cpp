@@ -11,9 +11,8 @@
 #include <cmath>
 #include <vector>
 
-// Eigene Header
 #include "core/runtime_config.h"
-#include "core/TRACKING/Tracking.h" // Hier ist jetzt struct LaneLine definiert
+#include "core/TRACKING/Tracking.h"
 
 using namespace cv;
 using namespace std;
@@ -21,67 +20,57 @@ using namespace std;
 // === Parameter ===
 const double SPEED = 0.2;
 
-// PID Parameter
-const double KP = 0.25;
+// PID Parameter (Etwas sanfter eingestellt)
+const double KP = 0.18; // Reduziert (war 0.25)
 const double KI = 0.00;
-const double KD = 0.4;
+const double KD = 0.25; // Reduziert (war 0.4), da der D-Anteil das Zittern verursacht
 
 // Bild Dimensionen
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
-const int LOOKAHEAD_Y = 350;
+const int LOOKAHEAD_Y = 350; // Wenn möglich, teste hier mal 380-400 für bessere Kurven
 
-// Struktur für den PID-Speicher
+// NEU: Parameter für Glättung
+const double ALPHA = 0.7; // Glättungsfaktor (0.0 bis 1.0). 1.0 = Keine Glättung. 0.1 = Starke Glättung.
+const int MAX_STEERING_CHANGE = 30; // Maximale Änderung der Lenkung pro Schritt (verhindert Zucken)
+
 struct PIDState {
     double prev_error;
     double integral;
     ros::Time last_time;
 
-    PIDState() : prev_error(0), integral(0), last_time(ros::Time(0)) {}
+    // NEU: Speicher für Glättung
+    double prev_smoothed_error;
+    int last_steering_output;
+
+    PIDState() : prev_error(0), integral(0), last_time(ros::Time(0)),
+                 prev_smoothed_error(0), last_steering_output(0) {}
 };
 
 // Globale Variablen
 PIDState pid_state;
-Mat g_current_frame;          // Speichert das aktuellste Bild
-bool g_has_new_frame = false; // Flag, ob ein neues Bild da ist
+Mat g_current_frame;
+bool g_has_new_frame = false;
 string g_robot_name;
 
-/**
- * Holt den Roboternamen sicher aus der Umgebungsvariable
- */
 string get_robot_name() {
     const char* robot_name_env = std::getenv("VEHICLE_NAME");
-    if (!robot_name_env) {
-        ROS_ERROR("VEHICLE_NAME nicht gesetzt. Nutze 'default'.");
-        return "default";
-    }
+    if (!robot_name_env) return "zeta";
     return string(robot_name_env);
 }
 
-/**
- * Callback für Kamerabilder
- */
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     try {
-        // Konvertiere ROS-Nachricht zu OpenCV Mat (BGR8 Format)
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
-        // Speichere das Bild in der globalen Variable für den Main-Loop
         g_current_frame = cv_ptr->image.clone();
         g_has_new_frame = true;
-
     } catch (cv_bridge::Exception& e) {
         ROS_ERROR("cv_bridge exception: %s", e.what());
     }
 }
 
-// === Hilfsfunktionen für Steuerung (Unverändert) ===
-
 double get_x_at_y(const LaneLine& line, int y) {
-    // Schutz vor Division durch Null bei fast vertikalen Linien (cos(90) = 0)
-    if (std::abs(std::cos(line.theta)) < 0.001) {
-        return IMG_WIDTH / 2.0;
-    }
+    if (std::abs(std::cos(line.theta)) < 0.001) return IMG_WIDTH / 2.0;
     return (line.rho - y * std::sin(line.theta)) / std::cos(line.theta);
 }
 
@@ -117,45 +106,63 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
 
-    //ROS_INFO("x_left: %.2f", x_left);
-    //ROS_INFO("x_right: %.2f", x_right);
-
-
-    const double NOMINAL_LANE_WIDTH = 240.0;
-    double current_width = x_right - x_left;
     // Sanity Check
-    bool width_is_valid = (current_width > 150 && current_width < 350);
-
-    if (!width_is_valid)
-    {
-        ROS_INFO("Invalid: %.2f", current_width);
+    double current_width = x_right - x_left;
+    if (current_width < 150 || current_width > 400) {
+        // Bei invaliden Daten einfach geradeaus (oder alten Wert halten)
+        ROS_WARN("Ungueltige Breite: %.2f", current_width);
+        // Optional: return; um nichts zu tun, oder weiterrechnen mit Risiko
     }
 
-    // Ziel: Mitte der Fahrbahn
     double lane_center_x = (x_left + x_right) / 2.0;
     double target_x = IMG_WIDTH / 2.0;
 
-    double error = lane_center_x - target_x;
+    // Roher Fehler
+    double raw_error = lane_center_x - target_x;
 
-    //ROS_INFO("Distanz: %.2f", error);
-    // PID Berechnung
-    double P = KP * error;
+    // === 1. GLÄTTUNG (Exponential Moving Average) ===
+    // Neuer geglätteter Wert = (Alpha * Aktuell) + ((1-Alpha) * Alt)
+    // Wenn ALPHA = 0.7: Wir vertrauen dem neuen Wert zu 70% und dem alten zu 30%.
+    // Das dämpft das "Rauschen" der Kamera.
+    double smoothed_error = (ALPHA * raw_error) + ((1.0 - ALPHA) * pid_state.prev_smoothed_error);
 
-    pid_state.integral += error * dt;
-    // Anti-Windup
+    // Speichern für nächsten Loop
+    pid_state.prev_smoothed_error = smoothed_error;
+
+
+    // PID Berechnung (mit geglättetem Fehler!)
+    double P = KP * smoothed_error;
+
+    pid_state.integral += smoothed_error * dt;
     if (pid_state.integral > 1000) pid_state.integral = 1000;
     if (pid_state.integral < -1000) pid_state.integral = -1000;
     double I = KI * pid_state.integral;
 
-    double derivative = (error - pid_state.prev_error) / dt;
+    // Derivative: Hier ist der Trick. Entweder man nimmt (error - prev_error)
+    // oder besser (smoothed_error - prev_smoothed_error) um Spikes zu vermeiden.
+    double derivative = (smoothed_error - pid_state.prev_error) / dt;
     double D = KD * derivative;
 
     double output = P + I + D;
 
-    pid_state.prev_error = error;
+    pid_state.prev_error = smoothed_error;
     pid_state.last_time = now;
 
     int steering_cmd = static_cast<int>(output);
+
+    // === 2. SLEW RATE LIMITER (Verhindert plötzliches Reissen) ===
+    // Wir begrenzen, wie stark sich die Lenkung im Vergleich zum letzten Mal ändern darf.
+    int delta = steering_cmd - pid_state.last_steering_output;
+
+    if (delta > MAX_STEERING_CHANGE) {
+        steering_cmd = pid_state.last_steering_output + MAX_STEERING_CHANGE;
+    } else if (delta < -MAX_STEERING_CHANGE) {
+        steering_cmd = pid_state.last_steering_output - MAX_STEERING_CHANGE;
+    }
+
+    // Speichern
+    pid_state.last_steering_output = steering_cmd;
+
     publish_steering(publisher, steering_cmd);
 }
 
@@ -168,37 +175,26 @@ void stop_wheels(ros::Publisher& publisher) {
     ros::Duration(1.0).sleep();
 }
 
-// === MAIN DRIVER ===
-
 int driver(int argc, char **argv) {
     g_robot_name = get_robot_name();
-
     ros::init(argc, argv, "lane_follower_driver", ros::init_options::AnonymousName);
     ros::NodeHandle n;
 
-    // 1. Publisher für Räder
     string topic_wheels = "/" + g_robot_name + "/wheels_driver_node/wheels_cmd";
     ros::Publisher publisher = n.advertise<duckietown_msgs::WheelsCmdStamped>(topic_wheels, 1);
 
-    // 2. Subscriber für Kamera
     string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
-    ROS_INFO("Abonniere Kamera: %s", topic_cam.c_str());
 
-    // 3. Tracking Instanz erstellen
     Tracking tracker;
-    ROS_INFO("Tracking initialisiert.");
-
-    // Warten bis Verbindung steht
     ros::Duration(1.0).sleep();
-
-    // Loop Rate (30 Hz - schnell genug um Callbacks zu fangen)
     ros::Rate loop_rate(30);
 
-    // Timer für die Bildverarbeitung (0.5s Takt)
-    ros::Time last_process_time = ros::Time::now();
-    const double PROCESS_INTERVAL = 0.25; // Sekunden
+    // WICHTIG: Hier wieder schneller werden, damit der Regler "fein" arbeiten kann.
+    // Die Ruhe kommt jetzt durch den Filter (ALPHA), nicht durch Warten.
+    const double PROCESS_INTERVAL = 0.08; // ca. 12 Hz
 
+    ros::Time last_process_time = ros::Time::now();
     ros::Time start_time = ros::Time::now();
     while (start_time.toSec() == 0) {
         start_time = ros::Time::now();
@@ -207,53 +203,33 @@ int driver(int argc, char **argv) {
 
     double elapsed_sec = 0;
 
-    ROS_INFO("Starte Autonomous Lane Following...");
+    ROS_INFO("Starte Smoothed Lane Following...");
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
-        // WICHTIG: Callbacks verarbeiten (Bild empfangen)
         ros::spinOnce();
-
         elapsed_sec = (ros::Time::now() - start_time).toSec();
         double time_since_process = (ros::Time::now() - last_process_time).toSec();
 
-        // Prüfen: Sind 0.5s vergangen UND haben wir ein Bild?
         if (time_since_process >= PROCESS_INTERVAL && g_has_new_frame && !g_current_frame.empty()) {
-
-            // --- BILDVERARBEITUNG START ---
-
-            // Kopie erstellen, damit der Callback nicht dazwischenfunkt
             Mat working_frame = g_current_frame.clone();
-            g_has_new_frame = false; // Flag resetten
+            g_has_new_frame = false;
 
-            // Tracking Algorithmus aufrufen
-            // Rückgabe: Vector mit LaneLines
-            // Laut Tracking.cpp: erst Left push_back, dann Right push_back
             vector<LaneLine> lines = tracker.generateHoughValuesOntestvideowithTrapezoid(working_frame);
 
-            // Fehlerbehandlung: Sicherstellen, dass wir 2 Linien zurückbekommen haben
             if (lines.size() >= 2) {
                 LaneLine line_L = lines[0];
                 LaneLine line_R = lines[1];
-
-                // Debug Info
-                // ROS_INFO("L: rho=%.2f th=%.2f | R: rho=%.2f th=%.2f", line_L.rho, line_L.theta, line_R.rho, line_R.theta);
-
-                // Räder steuern
                 follow_lane(publisher, line_L, line_R);
             } else {
-                ROS_WARN("Tracking hat weniger als 2 Linien zurueckgegeben!");
+                ROS_WARN("Linien verloren - halte Kurs");
+                // Optional: publish_steering(publisher, pid_state.last_steering_output);
             }
 
-            // Timer zurücksetzen
             last_process_time = ros::Time::now();
-
-            // --- BILDVERARBEITUNG ENDE ---
         }
-
         loop_rate.sleep();
     }
 
-    ROS_INFO("Zeit abgelaufen (%.2f s). Stoppe Roboter.", elapsed_sec);
     stop_wheels(publisher);
     return 0;
 }
