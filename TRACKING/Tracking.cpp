@@ -218,108 +218,74 @@ void Tracking::applyAndDrawROITriangle(cv::Mat& img_edges, cv::Mat& img_visual) 
 }
 void Tracking::generateHoughValuesOntestvideowithTriangle(Mat img) {
     Mat image, gray, blurred, dst, color_dst;
-    
-        image=img.clone(); // BGR Bild laden
 
+    image = img.clone();
+    color_dst = image.clone();
 
-        // 1. Vorverarbeitung
-        cvtColor(image, gray, COLOR_BGR2GRAY);
-        // 2. Bild für Anzeige vorbereiten
-        color_dst = image.clone();
-        GaussianBlur(gray, blurred, Size(7, 7), 1.5);
-        Canny(blurred, dst, 100, 200, 3); // Werte ggf. anpassen (150, 180 war etwas hoch)
-        // Eine Funktion erledigt Maskierung UND Zeichnen gleichzeitig
-        applyAndDrawROITriangle(dst, color_dst);
-    
-    
-        
-        
+    // 1. Vorverarbeitung
+    cvtColor(image, gray, COLOR_BGR2GRAY);
+    GaussianBlur(gray, blurred, Size(7, 7), 1.5);
 
-        // 3. Hough Transformation
-        vector<Vec4i> lines;
-        // Tipp: maxLineGap (letzter Wert) nicht zu hoch, sonst verbindet er Striche falsch
-        HoughLinesP(dst, lines, 1, CV_PI / 180, 50, 30, 10);
+    // --- Fuzzy Canny nutzen ---
+    dst = FuzzyCanny.applyCannyEdgeDetection(blurred);
 
-        // Debug: Alle erkannten Linien blau malen
-        for (size_t i = 0; i < lines.size(); i++) {
-            line(color_dst, Point(lines[i][0], lines[i][1]),
-                 Point(lines[i][2], lines[i][3]), Scalar(255, 0, 0), 1);
-        }
+    // 2. ROI (Maskieren)
+    dst = m_roi.update(dst);
+    m_roi.draw(color_dst);
 
-        // --- SORTIERUNG LINKS / RECHTS ---
-        double sumRhoL = 0, sumThetaL = 0;
-        int countL = 0;
-        double sumRhoR = 0, sumThetaR = 0;
-        int countR = 0;
+    // Line Detection
+    LineDetection lineDetector;
 
-        for (size_t i = 0; i < lines.size(); i++) {
-            Vec4i l = lines[i];
+    // Besserer Wert: 45
+    lineDetector.setHoughThreshold(45);
 
-            // Winkel berechnen
-            double angle_rad = atan2(l[3] - l[1], l[2] - l[0]);
-            double theta = angle_rad + CV_PI / 2.0;
-            double rho = l[0] * cos(theta) + l[1] * sin(theta);
+    int rawCount = 0;
 
-            // Normalisierung
-            if (theta < 0) {
-                theta += CV_PI;
-                rho = -rho;
-            }
+    std::vector<LaneLine> results = lineDetector.detectLines(dst, color_dst, rawCount);
 
-            double angle_deg = theta * 180.0 / CV_PI;
+    // Dem Fuzzy-Regler sagen, wie viele Linien es waren, damit er für das NÄCHSTE Bild lernt.
+    FuzzyCanny.updateThresholds(rawCount);
 
-            // Filter: Horizontale Linien ignorieren (Horizont/Busse)
-            if (angle_deg > 70 && angle_deg < 110) {
-                continue;
-            }
+    // Index 0 ist laut der Klasse immer LINKS
+    LaneLine leftLine = results[0];
+    // Index 1 ist laut der Klasse immer RECHTS
+    LaneLine rightLine = results[1];
 
-            // Sortieren nach Links/Rechts (90 Grad Grenze)
-            if (angle_deg < 90) { 
-                // Rechte Spur (neigt sich nach rechts)
-                sumRhoR += rho;
-                sumThetaR += theta;
-                countR++;
-            } else { 
-                // Linke Spur (neigt sich nach links)
-                sumRhoL += rho;
-                sumThetaL += theta;
-                countL++;
-            }
-        }
+    // --- VISUALISIERUNG ---
+    // Wir zeichnen die erkannten Durchschnittslinien in Cyan (Hellblau)
+    if (leftLine.found) {
+        drawRhoThetaLine(color_dst, leftLine.rho, leftLine.theta, Scalar(255, 255, 0), 2);
+    }
+    if (rightLine.found) {
+        drawRhoThetaLine(color_dst, rightLine.rho, rightLine.theta, Scalar(255, 255, 0), 2);
+    }
 
-        // --- MITTELWERTE BERECHNEN ---
-        double avgRhoL = 0, avgThetaL = 0;
-        double avgRhoR = 0, avgThetaR = 0;
-        bool hasLeft = false;
-        bool hasRight = false;
+    // --- DATENÜBERGABE AN KALMAN (process) ---
+    // Wir müssen die Struktur "LaneLine" in die Variablen entpacken,
+    // die deine process-Funktion erwartet.
 
-        if (countL > 0) {
-            avgRhoL = sumRhoL / countL;
-            avgThetaL = sumThetaL / countL;
-            hasLeft = true;
-        }
+    double avgRhoL = leftLine.rho;
+    double avgThetaL = leftLine.theta;
+    bool hasLeft = leftLine.found;
 
-        if (countR > 0) {
-            avgRhoR = sumRhoR / countR;
-            avgThetaR = sumThetaR / countR;
-            hasRight = true;
-        }
+    double avgRhoR = rightLine.rho;
+    double avgThetaR = rightLine.theta;
+    bool hasRight = rightLine.found;
 
-        // --- KALMAN FILTER UPDATE ---
-        // WICHTIG: Wir rufen process() IMMER auf.
-        // Die Logik, ob predict() oder correct() passiert, liegt jetzt IN der process-Funktion.
-        process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
+    process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
 
-        // Anzeige
-        // Debug: Zeige das maskierte Kantenbild, um zu sehen, ob es passt
-        DisplayFourPictures::getInstance().showROIComparison(dst);
-        DisplayFourPictures::getInstance().showROIComparison(color_dst);
-        
+    m_roi.setLaneStatus(
+        leftLine.found, leftLine.rho, leftLine.theta,
+        rightLine.found, rightLine.rho, rightLine.theta
+    );
 
-        
-    
-
+    // Anzeige
+    DisplayFourPictures::getInstance().showROIComparison(dst);
+    DisplayFourPictures::getInstance().showROIComparison(color_dst);
 }
+
+        
+
 void Tracking::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     Mat image, gray, blurred, dst, color_dst;
     

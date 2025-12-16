@@ -30,7 +30,7 @@ int main() {
     onePictureAandB(image5); */
 
     Tracking F;
-    string path = "/home/lu/lanedetect/lane-detection-duckiebot/TrackingTrainData/lane_dataset_realistic/testvideo/duckitest.mp4";
+    string path = "/home/nico/CLionProjects/lane-detection-duckiebot/TrackingTrainData/lane_dataset_realistic/testvideo/duckitest.mp4";
 
     VideoCapture cap(path);
 
