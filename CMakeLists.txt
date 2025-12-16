@@ -36,6 +36,10 @@ set(SOURCES
     FOURPICTURESDISPLAY/DisplayFourPictures.h
     TRACKING/Tracking.cpp
     TRACKING/Tracking.h
+        ROISELECTION/RoiSelection.h
+        ROISELECTION/RoiSelection.cpp
+        LineDetection/LineDetection.cpp
+        LineDetection/LineDetection.h
 )
 
 # 4. Executable erstellen

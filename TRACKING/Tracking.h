@@ -3,14 +3,22 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <vector>
-#include "FuzzyCannyEdgedetection.h"
+#include "FuzzyCannyEdgeDetection.h"
+
+#include "LineDetection/LineDetection.h"
+
+#include "ROISELECTION/RoiSelection.h"
+
 #include "../FOURPICTURESDISPLAY/DisplayFourPictures.h"
 using namespace cv;
 using namespace std;
-struct LaneLine {
+
+/*struct LaneLine {
     double rho;   // Abstand zum Ursprung (Pixel)
     double theta; // Winkel der Normalen (Bogenmaß)
 };
+*/
+
 class Tracking
 {
     //p entfernung vom ursprung und θ gleich winkel 
@@ -27,6 +35,7 @@ private:
     KalmanFilter kfLeft;
     KalmanFilter kfRight;
     FuzzyCannyEdgeDetection FuzzyCanny;
+    RoiSelection m_roi;
     /* data */
 public:
     Tracking(/* args */);

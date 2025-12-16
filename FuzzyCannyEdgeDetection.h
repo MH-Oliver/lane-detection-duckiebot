@@ -30,6 +30,11 @@ double tooManyMF(int x, int start, int end);
 
 public:
     cv::Mat applyCannyEdgeDetection(cv::Mat image);
+
+    void updateThresholds(int detectedLinesCount);
+
+    // Getter für Debugging
+    double getUpperThreshold() const { return m_UpperThreshold; }
 };
 
 #endif //FUZZYCANNYEDGEDETECTION_H

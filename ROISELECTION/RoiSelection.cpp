@@ -1,141 +1,154 @@
 #include "RoiSelection.h"
-#include <cmath>
-#include <algorithm>
+#include <numeric> // Für std::accumulate
 
 RoiSelection::RoiSelection() {
-    // Startwerte (werden beim ersten update überschrieben)
-    current_x_roi = -1; 
-    current_y_roi = -1;
+    // Initialer Dummy-Wert für Y (1/3 der Höhe)
+    // Das wird überschrieben, sobald die ersten Linien erkannt werden.
+    m_lastVanishingPointY = -1;
 }
 
-RoiSelection::~RoiSelection() {}
-
-std::vector<cv::Point> RoiSelection::getTriangularROI(int img_width, int img_height) {
-    // --- Initialisierung (beim allerersten Frame) ---
-    if (current_x_roi == -1) current_x_roi = img_width / 2;
-    if (current_y_roi == -1) current_y_roi = (int)(img_height * (2.0 / 3.0)); // Default Paper Wert
-
-    // Paper: "triangular ROI ... based on the bottom of the image, with the tip (X, Y)"
-    
-    std::vector<cv::Point> roi_points;
-    // Punkt 1: Unten Links
-    roi_points.push_back(cv::Point(0, img_height));
-    
-    // Punkt 2: Spitze (Tip) - Hier greift die adaptive Logik
-    roi_points.push_back(cv::Point(current_x_roi, current_y_roi));
-    
-    // Punkt 3: Unten Rechts
-    roi_points.push_back(cv::Point(img_width, img_height));
-
-    return roi_points;
+RoiSelection::~RoiSelection() {
 }
 
-void RoiSelection::update(const std::vector<cv::Vec4i>& lines, int img_width, int img_height) {
-    // 1. Linien sortieren (Links/Rechts)
-    std::vector<cv::Vec4i> left_lines, right_lines;
-    
-    for (const auto& l : lines) {
-        // Steigung m = dy / dx
-        double dx = l[2] - l[0];
-        double dy = l[3] - l[1];
-        
-        if (std::abs(dx) < 1e-6) continue; // Vertikale Linien ignorieren (selten bei Lane Detection)
-        
-        double slope = dy / dx;
+// Hilfsmathematik: Schnittpunkt von zwei Geraden (Hough-Parameter)
+cv::Point2f RoiSelection::calculateIntersection(double rho1, double theta1, double rho2, double theta2) {
+    // Line 1: x cos(t1) + y sin(t1) = rho1
+    // Line 2: x cos(t2) + y sin(t2) = rho2
+    // Wir lösen das lineare Gleichungssystem nach x und y auf (Cramersche Regel)
 
-        // Im Bildkoordinatensystem (y wächst nach unten):
-        // Negative Steigung = Linke Spur (/)
-        // Positive Steigung = Rechte Spur (\)
-        // (Wertebereich muss evtl. angepasst werden, je nach Kamera)
-        if (std::abs(slope) < 0.3) continue; // Horizontale Linien ignorieren
+    double ct1 = cos(theta1), st1 = sin(theta1);
+    double ct2 = cos(theta2), st2 = sin(theta2);
 
-        if (slope < 0) left_lines.push_back(l);
-        else right_lines.push_back(l);
+    double d = ct1 * st2 - st1 * ct2; // Determinante
+
+    // Parallele Linien (sollte bei Fahrbahn nicht passieren, aber sicher ist sicher)
+    if (fabs(d) < 0.001) return cv::Point2f(-1, -1);
+
+    double x = (st2 * rho1 - st1 * rho2) / d;
+    double y = (-ct2 * rho1 + ct1 * rho2) / d;
+
+    return cv::Point2f((float)x, (float)y);
+}
+
+// --- Hier passiert die Berechnung für das NÄCHSTE Bild ---
+void RoiSelection::setLaneStatus(bool hasLeft, double rhoL, double thetaL,
+                                 bool hasRight, double rhoR, double thetaR) {
+
+    // Speichern für X-Berechnung im nächsten Update
+    m_hasLeftLast = hasLeft;
+    m_hasRightLast = hasRight;
+
+    // Y-Berechnung (Vanishing Point Logic)
+    if (hasLeft && hasRight) {
+        // Beide Linien da -> Schnittpunkt berechnen
+        cv::Point2f vp = calculateIntersection(rhoL, thetaL, rhoR, thetaR);
+
+        if (vp.x != -1 && vp.y != -1) {
+            int currentY = (int)vp.y;
+
+            // Paper: "Y_ROI was lowered to 1.1 times the vanishing point height"
+            // Merke: In OpenCV ist Y=0 oben. Ein größerer Y-Wert heißt "weiter unten".
+            // Wir speichern hier den rohen VP, den Faktor wenden wir im update an.
+
+            m_vanishingPointYHistory.push_back(currentY);
+            if (m_vanishingPointYHistory.size() > m_historySize) {
+                m_vanishingPointYHistory.pop_front();
+            }
+        }
+    }
+    // Wenn eine Linie fehlt, fügen wir nichts Neues hinzu und zehren im update() vom Durchschnitt.
+}
+
+cv::Mat RoiSelection::update(cv::Mat Image) {
+    if (Image.empty()) return Image;
+
+    int height = Image.rows;
+    int width = Image.cols;
+
+    // Initialisierung beim allerersten Frame (wenn noch keine History da ist)
+    if (m_lastVanishingPointY == -1) {
+        m_lastVanishingPointY = height / 3; // Startwert
     }
 
-    bool left_det = !left_lines.empty();
-    bool right_det = !right_lines.empty();
-    bool both_detected = left_det && right_det;
-
-    // --- Calculation of X_ROI ---
+    // --- 1. Calculation of X_ROI (Die horizontale Spitze) ---
     // Default: Mitte
-    double x_temp = img_width / 2.0;
-    double offset = img_width * 0.05; // Paper: 5% adjustment
+    int x_roi = width / 2;
+    int shift = (int)(width * 0.05); // Paper: "adjusted 5%"
 
-    if (!left_det && right_det) {
-        // Linke Seite fehlt -> Kurve nach links erwartet -> ROI shift links
-        x_temp -= offset;
-    } else if (left_det && !right_det) {
-        // Rechte Seite fehlt -> ROI shift rechts
-        x_temp += offset;
+    if (!m_hasLeftLast && m_hasRightLast) {
+        // Linke Linie weg -> Wir schwenken nach links (um sie zu suchen?)
+        // Paper: "adjusted 5% towards the left when left-hand side disappeared"
+        x_roi -= shift;
+    } else if (m_hasLeftLast && !m_hasRightLast) {
+        // Rechte Linie weg -> Nach rechts schwenken
+        x_roi += shift;
     }
-    current_x_roi = (int)x_temp;
+    // Wenn beide da sind (oder beide weg), bleiben wir in der Mitte.
 
-    // --- Calculation of Y_ROI ---
-    
-    if (both_detected) {
-        // Versuche Vanishing Point (VP) zu berechnen
-        cv::Point vp = calculateVanishingPoint(left_lines, right_lines);
-        
-        // Plausibilitätscheck für VP (darf nicht völlig außerhalb liegen)
-        if (vp.y > 0 && vp.y < img_height) {
-             // Paper: "y-axis intercept was lowered to 1.1 times the vanishing point height"
-            double new_y = vp.y * 1.1;
-            
-            // In History speichern
-            if (vp_y_history.size() >= MAX_HISTORY_SIZE) vp_y_history.pop_front();
-            vp_y_history.push_back((int)new_y); // Speichere schon den skalierten Wert oder rohen VP, Paper sagt VP height logic
+    // --- 2. Calculation of Y_ROI (Die vertikale Spitze / Horizont) ---
+    int y_roi = 0;
 
-            current_y_roi = (int)new_y;
-        }
+    if (m_hasLeftLast && m_hasRightLast && !m_vanishingPointYHistory.empty()) {
+        // Paper: "When previous frame successfully detected... lowered to 1.1 times vanishing point"
+        int currentVP = m_vanishingPointYHistory.back();
+        y_roi = (int)(currentVP * 1.1);
+
+        // Sicherheitscheck: Nicht tiefer als das Bild (sollte nicht passieren)
+        if (y_roi >= height) y_roi = height - 10;
+
     } else {
-        // Fallback wenn Linien fehlen
-        if (!vp_y_history.empty()) {
-             // Paper: "averaged vanishing point height in the previous 30 detected frames"
-            long long sum = 0;
-            for(int val : vp_y_history) sum += val;
-            current_y_roi = (int)(sum / vp_y_history.size());
+        // Paper: "When either lane NOT detected... average of previous 30 frames"
+        if (!m_vanishingPointYHistory.empty()) {
+            double sum = 0;
+            for (int val : m_vanishingPointYHistory) sum += val;
+            double avgVP = sum / m_vanishingPointYHistory.size();
+
+            y_roi = (int)(avgVP * 1.1); // Auch hier Faktor 1.1
         } else {
-            // Hard Fallback
-             current_y_roi = (int)(img_height * (2.0 / 3.0));
+            // Fallback (ganz am Anfang): Statischer Wert
+            y_roi = (int)(height * (1.0 / 3.0));
         }
     }
 
-    // Clamping (Sicherstellen, dass Punkte im Bild bleiben)
-    current_x_roi = std::max(0, std::min(img_width, current_x_roi));
-    current_y_roi = std::max(0, std::min(img_height, current_y_roi));
-    
-    // Status merken
-    last_left_detected = left_det;
-    last_right_detected = right_det;
+    // Sicherheitsanker: Wenn der berechnete Horizont zu tief rutscht (weil VP falsch war),
+    // beschränken wir ihn auf z.B. die Hälfte des Bildes. Sonst schneiden wir die Straße weg.
+    if (y_roi > height / 2) y_roi = height / 2;
+    if (y_roi < 0) y_roi = 0;
+
+
+    // --- Maske erstellen---
+    cv::Mat mask = cv::Mat::zeros(height, width, CV_8UC1);
+
+    // Extra breite Basis unten beibehalten
+    int extra_width = width;
+
+    // Die Punkte
+    cv::Point p1(0 - extra_width, height);      // Unten Links
+    cv::Point p2(x_roi, y_roi);                 // Die adaptive Spitze!
+    cv::Point p3(width + extra_width, height);  // Unten Rechts
+
+    this->currentTriangle.clear();
+    this->currentTriangle.push_back(p1);
+    this->currentTriangle.push_back(p2);
+    this->currentTriangle.push_back(p3);
+
+    std::vector<std::vector<cv::Point>> fill_pts;
+    fill_pts.push_back(this->currentTriangle);
+
+    cv::fillPoly(mask, fill_pts, cv::Scalar(255));
+
+    cv::Mat maskedImage;
+    Image.copyTo(maskedImage, mask);
+
+    return maskedImage;
 }
 
-cv::Point RoiSelection::calculateVanishingPoint(const std::vector<cv::Vec4i>& left_lines, 
-                                                const std::vector<cv::Vec4i>& right_lines) {
-    // Sehr vereinfachte Annäherung: Mittelwert aller Start/Endpunkte jeder Seite nehmen
-    // Besser wäre: Regressionsgerade für links und rechts berechnen, dann Schnittpunkt.
-    
-    auto get_average_line = [](const std::vector<cv::Vec4i>& lines) {
-        double x1=0, y1=0, x2=0, y2=0;
-        for(const auto& l : lines) {
-            x1+=l[0]; y1+=l[1]; x2+=l[2]; y2+=l[3];
-        }
-        size_t n = lines.size();
-        return cv::Vec4d(x1/n, y1/n, x2/n, y2/n);
-    };
+void RoiSelection::draw(cv::Mat& outputImage) {
+    if (currentTriangle.empty()) return;
 
-    cv::Vec4d l_avg = get_average_line(left_lines);
-    cv::Vec4d r_avg = get_average_line(right_lines);
-
-    // Schnittpunkt zweier Geraden berechnen
-    double x1 = l_avg[0], y1 = l_avg[1], x2 = l_avg[2], y2 = l_avg[3];
-    double x3 = r_avg[0], y3 = r_avg[1], x4 = r_avg[2], y4 = r_avg[3];
-
-    double det = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-    if (std::abs(det) < 1e-6) return cv::Point(0,0); // Parallel
-
-    double px = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4)) / det;
-    double py = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / det;
-
-    return cv::Point((int)px, (int)py);
+    for (size_t i = 0; i < currentTriangle.size(); i++) {
+        cv::Point p_current = currentTriangle[i];
+        cv::Point p_next = currentTriangle[(i + 1) % currentTriangle.size()];
+        cv::line(outputImage, p_current, p_next, cv::Scalar(0, 255, 255), 2);
+    }
 }
