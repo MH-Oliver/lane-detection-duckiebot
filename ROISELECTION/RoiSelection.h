@@ -1,49 +1,39 @@
-#ifndef ROI_SELECTION_H
-#define ROI_SELECTION_H
+#ifndef ROISELECTION_H
+#define ROISELECTION_H
 
 #include <opencv2/opencv.hpp>
 #include <vector>
-#include <deque>
-#include <numeric>
+#include <deque> // Für den 30-Frame Buffer
 
 class RoiSelection {
 private:
-    // Speichert die Y-Koordinaten des Vanishing Points (Paper: "previous 30 detected frames")
-    std::deque<int> vp_y_history;
-    const size_t MAX_HISTORY_SIZE = 30;
+    std::vector<cv::Point> currentTriangle;
 
-    // Status des letzten Frames für X-Shift
-    bool last_left_detected = true;
-    bool last_right_detected = true;
-    
-    // Berechnete Werte für den aktuellen Frame
-    int current_x_roi;
-    int current_y_roi;
+    // Zustandsspeicher für Adaptives ROI
+    std::deque<int> m_vanishingPointYHistory; // Speichert Y-Werte der letzten 30 Frames
+    const size_t m_historySize = 30;
 
-    // Hilfsmethode: Schnittpunkt berechnen
-    cv::Point calculateVanishingPoint(const std::vector<cv::Vec4i>& left_lines, 
-                                      const std::vector<cv::Vec4i>& right_lines);
+    bool m_hasLeftLast = false;
+    bool m_hasRightLast = false;
+
+    // Standardwerte (Falls wir noch keine Geschichte haben)
+    int m_lastVanishingPointY = 0;
+
+    // Hilfsmethode: Schnittpunkt zweier Linien (rho/theta) berechnen
+    cv::Point2f calculateIntersection(double rho1, double theta1, double rho2, double theta2);
 
 public:
     RoiSelection();
     ~RoiSelection();
 
-    /**
-     * @brief Berechnet das ROI-Dreieck basierend auf dem Status des vorherigen Frames.
-     * Sollte VOR der Linienerkennung auf das Bild angewendet werden.
-     * * @param img_width Bildbreite
-     * @param img_height Bildhöhe
-     * @return std::vector<cv::Point> Das Dreieck (3 Punkte)
-     */
-    std::vector<cv::Point> getTriangularROI(int img_width, int img_height);
+    // Wendet das ROI basierend auf den DATEN VOM VORHERIGEN FRAME an
+    cv::Mat update(cv::Mat Image);
 
-    /**
-     * @brief Aktualisiert die Logik basierend auf den gerade gefundenen Linien.
-     * Sollte NACH der Linienerkennung aufgerufen werden.
-     * * @param lines Die erkannten Linien (z.B. aus Hough Transform)
-     * @param img_width Bildbreite (für relative Berechnungen)
-     */
-    void update(const std::vector<cv::Vec4i>& lines, int img_width, int img_height);
+    void draw(cv::Mat& outputImage);
+
+    // Hier füttern wir die Ergebnisse der LineDetection am Ende des Frames rein
+    void setLaneStatus(bool hasLeft, double rhoL, double thetaL,
+                       bool hasRight, double rhoR, double thetaR);
 };
 
-#endif
+#endif //ROISELECTION_H

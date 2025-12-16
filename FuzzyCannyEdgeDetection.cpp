@@ -31,32 +31,39 @@ double FuzzyCannyEdgeDetection::tooManyMF(int x, int start, int end) {
 }
 
 
-void FuzzyCannyEdgeDetection::fuzzyRefreshThresholds (int NumberOfLinesLastFrame) {
+void FuzzyCannyEdgeDetection::fuzzyRefreshThresholds(int linesCount) {
 
-    // Mitgliedsgrade berechnen
-    double muTooFew   = tooFewMF(NumberOfLinesLastFrame, 18000, 22000);
-    double muFew      = triangleMF(NumberOfLinesLastFrame, 21000, 22000, 23000);
-    double muGood     = triangleMF(NumberOfLinesLastFrame, 22000, 24000, 26000);
-    double muMany     = triangleMF(NumberOfLinesLastFrame, 25000, 26000, 27000);
-    double muTooMany  = tooManyMF(NumberOfLinesLastFrame, 26000, 29000);
+    // Fuzzy-Zugehörigkeiten (Ranges angepasst auf Hough-Linien: 0 bis 35)
+    double muTooFew   = tooFewMF(linesCount, 2, 5);
+    double muFew      = triangleMF(linesCount, 3, 6, 10);
+    double muGood     = triangleMF(linesCount, 8, 12, 18);
+    double muMany     = triangleMF(linesCount, 15, 20, 28);
+    double muTooMany  = tooManyMF(linesCount, 25, 35);
 
-    // Regelbasis anwenden
+    // Regelbasis
     double adjustment = 0.0;
-    adjustment += muTooFew   * (-1.5); // Minus some
-    adjustment += muFew      * (-0.5); // Minus little
-    adjustment += muGood     * (0.0);  // Zero
-    adjustment += muMany     * (+0.5); // Add little
-    adjustment += muTooMany  * (+1.5); // Add some
+    adjustment += muTooFew   * (-1.5); // Schnell runter
+    adjustment += muFew      * (-0.5); // Leicht runter
+    adjustment += muGood     * (0.0);  // Alles ok
+    adjustment += muMany     * (+0.5); // Leicht hoch
+    adjustment += muTooMany  * (+1.5); // Schnell hoch
 
     // Defuzzifizierung
     double sumMu = muTooFew + muFew + muGood + muMany + muTooMany;
-    if (sumMu > 0) adjustment /= sumMu;
+    if (sumMu > 0.0001) adjustment /= sumMu;
 
-    // Thresholds aktualisieren
+    // Update & Limits
     m_UpperThreshold += adjustment;
-    std::cerr << "m_UpperThreshold = " << m_UpperThreshold << std::endl;
-    //m_UpperThreshold = std::clamp(m_UpperThreshold, 30, 200); //clamping gibts erst ab c++17
+
+    // Limits setzen (Clamping): Nicht unter 10, nicht über 200
+    if (m_UpperThreshold < 10.0) m_UpperThreshold = 10.0;
+    if (m_UpperThreshold > 200.0) m_UpperThreshold = 200.0;
+
+    // Paper Regel: Low = High / 3
     m_LowerThreshold = m_UpperThreshold / 3.0;
+
+    // DEBUG:
+     std::cout << "[Fuzzy] Lines=" << linesCount << " Adj=" << adjustment << " Thresh=" << m_UpperThreshold << std::endl;
 }
 
 
@@ -70,9 +77,15 @@ cv::Mat FuzzyCannyEdgeDetection::applyCannyEdgeDetection(cv::Mat image) {
 
     // Anzahl der erkannten linien zählen
     //m_NumberLinesLastFrame = D.Anzahlerkanntelinien; //statisches attribut //TODO
-    m_NumberOfLinesLastFrame = 345; //platzhalter, eigentlich anzahl erkannter linien aus der pipeline-Klasse D nutzen.
+    //m_NumberOfLinesLastFrame = 345; //platzhalter, eigentlich anzahl erkannter linien aus der pipeline-Klasse D nutzen.
 
 	// Thresholds entsprechend der detektierten Linien aktualisieren
-	fuzzyRefreshThresholds(m_NumberOfLinesLastFrame);
+	//fuzzyRefreshThresholds(m_NumberOfLinesLastFrame);
     return edges;
 }
+
+void FuzzyCannyEdgeDetection::updateThresholds(int detectedLinesCount) {
+    // Ruft intern die private Logik auf
+    fuzzyRefreshThresholds(detectedLinesCount);
+}
+
