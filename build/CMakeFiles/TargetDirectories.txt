@@ -1,3 +1,0 @@
-/mnt/c/Users/johan/CLionProjects/WSL/lane-detection-duckiebot/build/CMakeFiles/driver_cpp_node.dir
-/mnt/c/Users/johan/CLionProjects/WSL/lane-detection-duckiebot/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/johan/CLionProjects/WSL/lane-detection-duckiebot/build/CMakeFiles/rebuild_cache.dir

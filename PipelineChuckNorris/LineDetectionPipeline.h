@@ -33,8 +33,19 @@ private:
     LineDetectionPipeline(/* args */);
     ~LineDetectionPipeline();
     void process(Mat image);
-    LineDetectionPipeline::LineDetectionPipeline(/* args */){}
-    LineDetectionPipeline::~LineDetectionPipeline(){}
+
+
+    // --- Getter-Methoden ---
+
+    // Mat-Ergebnisse (Rückgabe als Referenz spart Performance)
+    const Mat& getColorSpaceScalingResult() const { return ColorSpaceScalingResult; }
+    const Mat& getNoiseReductionResult() const { return NoiseReductionResult; }
+    const Mat& getFuzzyEdgeDetectionResult() const { return FuzzyEdgeDetectionResult; }
+    const Mat& getRoiSelectionResult() const { return RoiSelectionResult; }
+
+    // Vektor-Ergebnisse
+    const vector<LaneLine>& getLineDetectionResult() const { return LineDetectionResult; }
+    const vector<LaneLine>& getTrackingResult() const { return TrackingResult; }
 
 };
 #endif

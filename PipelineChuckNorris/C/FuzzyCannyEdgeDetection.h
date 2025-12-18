@@ -18,10 +18,21 @@ private:
 public:
     cv::Mat applyCannyEdgeDetection(cv::Mat image);
 
-    // NEU: Pipeline Interface
+    // Pipeline Interface
     cv::Mat process(cv::Mat img);
-    int getNumberOfLines(){return m_NumberOfLinesLastFrame;}
-    int setNumberOfLines(int number){m_NumberOfLinesLastFrame=number;}
+
+    // Getter
+    int getNumberOfLines() const { return m_NumberOfLinesLastFrame; }
+
+    // Setter (Neu hinzugefügt)
+    void setLineCount(int n) {
+        m_NumberOfLinesLastFrame = n;
+    }
+
+    // Optional: Korrektur der alten Methode (void statt int)
+    void setNumberOfLines(int number) {
+        m_NumberOfLinesLastFrame = number;
+    }
 };
 
 #endif // FUZZYCANNYEDGEDETECTION_H

@@ -15,6 +15,9 @@ struct LaneLine {
 
 class LineDetection {
 private:
+    // --- NEUES ATTRIBUT ---
+    int m_lineCount = 0;
+
     // Hough Parameter
     const double HOUGH_RHO_RES = 1.0;
     const double HOUGH_THETA_RES = CV_PI / 180.0; // 1 Grad in Rad
@@ -24,8 +27,6 @@ private:
     const double RAD2DEG = 180.0 / CV_PI;
 
     // Paper Winkel-Vorgaben
-    // Links: 25° - 65°
-    // Rechts: 110° - 155°
     const double LEFT_MIN_DEG = 20.0;
     const double LEFT_MAX_DEG = 75.0;
     const double RIGHT_MIN_DEG = 105.0;
@@ -41,11 +42,12 @@ public:
     // Hauptmethode
     std::vector<LaneLine> process(cv::Mat binaryEdgeImage);
 
-
     // Setter für Threshold
     void setHoughThreshold(int t) { m_houghThreshold = t; }
     int getHoughThreshold() const { return m_houghThreshold; }
-    int getLineCount();
-    void setLineCount(int value);
+
+    // --- AKTUALISIERTE GETTER & SETTER ---
+    int getLineCount() const { return m_lineCount; }
+    void setLineCount(int value) { m_lineCount = value; }
 };
 #endif

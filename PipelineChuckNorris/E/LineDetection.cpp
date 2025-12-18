@@ -49,7 +49,7 @@ std::vector<LaneLine> LineDetection::process(cv::Mat binaryEdgeImage) {
 
     // -----------------------------
     //---- Setze linienanzahl für canny
-    setLineCount((int)rawLines.size());
+    setLineCount(static_cast<int>(rawLines.size()));
     // DEBUG:
     std::cout << "------------------------------------------------" << std::endl;
     std::cout << "Hough hat " << rawLines.size() << " rohe Linien gefunden (Threshold: " << m_houghThreshold << ")" << std::endl;

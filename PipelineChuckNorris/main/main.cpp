@@ -8,6 +8,7 @@
 #include "../D/ROISelection.h"
 #include "../E/LineDetection.h"
 #include "../F/Tracking.h"
+#include "../LineDetectionPipeline.h"
 
 using namespace cv;
 using namespace std;
@@ -43,21 +44,8 @@ int main() {
     cerr << "Starting tracking test..." << endl;
     Mat frame;
 
-    // Pipeline Instanzen
-    ColorSpaceScaling A;
-    NoiseReduction B;
-    FuzzyCannyEdgeDetection C;
-    RoiSelection D;
-    LineDetection E;
-    Tracking F;
 
-    // Ergebnis-Variablen
-    Mat ColorSpaceScalingResult;
-    Mat NoiseReductionResult;
-    Mat FuzzyEdgeDetectionResult;
-    Mat RoiSelectionResult;
-    vector<LaneLine> LineDetectionResult;
-    vector<LaneLine> TrackingResult;
+    LineDetectionPipeline pipeline;
 
     while (true) {
         cap >> frame; // Nächstes Frame lesen
@@ -67,43 +55,19 @@ int main() {
             break;
         }
 
-        // --- PIPELINE START ---
-        // 1. Color Space Scaling
-        ColorSpaceScalingResult = A.process(frame.clone());
 
-        // 2. Noise Reduction
-        NoiseReductionResult = B.process(ColorSpaceScalingResult);
-
-        // 3. Fuzzy Canny
-        FuzzyEdgeDetectionResult = C.process(NoiseReductionResult);
-
-        // 4. ROI Selection (schneidet Bild zu / maskiert es)
-        RoiSelectionResult = D.process(FuzzyEdgeDetectionResult);
-
-        // 5. Line Detection (Hough)
-        LineDetectionResult = E.process(RoiSelectionResult);
-
-        // 6. Tracking (Kalman Filter)
-        TrackingResult = F.process(LineDetectionResult);
-        // --- PIPELINE ENDE ---
-
+        pipeline.process(frame);
 
         // --- VISUALISIERUNG ---
         // Wir nehmen das Original-Frame (oder das Ergebnis von Schritt A/B), um darauf zu malen
         Mat visualization = frame.clone();
 
         // A. ROI Einzeichnen (Gelb)
-        // Wir holen uns die Punkte von der RoiSelection Klasse
-        vector<Point> roiPoly = D.getROI(frame.clone());
-        if (!roiPoly.empty()) {
-            const Point* pts[1] = { &roiPoly[0] };
-            int npts[] = { (int)roiPoly.size() };
-            polylines(visualization, pts, npts, 1, true, Scalar(0, 255, 255), 2);
-        }
+        imshow("ROI Masked Image", pipeline.getRoiSelectionResult());
 
         // B. Rohe Linien (LineDetectionResult) zeichnen
         // Dünn: Rot (Links) / Blau (Rechts)
-        for (const auto& line : LineDetectionResult) {
+        for (const auto& line : pipeline.getLineDetectionResult()) {
             double angle_deg = line.theta * 180.0 / CV_PI;
             // Unterscheidung Links/Rechts anhand des Winkels (90 Grad Grenze)
             if (angle_deg < 90) {
@@ -115,7 +79,7 @@ int main() {
 
         // C. Getrackte Linien (TrackingResult) zeichnen
         // Dick: Magenta (Rechts) / Grün (Links)
-        for (const auto& line : TrackingResult) {
+        for (const auto& line : pipeline.getTrackingResult()) {
             double angle_deg = line.theta * 180.0 / CV_PI;
             if (angle_deg < 90) {
                 drawRhoThetaLine(visualization, line.rho, line.theta, Scalar(255, 0, 255), 3); // Magenta (Rechts)
