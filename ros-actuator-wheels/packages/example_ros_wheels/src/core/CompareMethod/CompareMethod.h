@@ -5,7 +5,7 @@
 #include <vector>
 using namespace cv;
 using namespace std;
-struct LaneLineSimpleSimple {
+struct LaneLineSimple {
     double rho;   // Abstand zum Ursprung (Pixel)
     double theta; // Winkel der Normalen (Bogenmaß)
 };
