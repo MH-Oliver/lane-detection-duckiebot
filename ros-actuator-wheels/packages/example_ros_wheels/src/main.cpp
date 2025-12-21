@@ -232,6 +232,8 @@ int driver(int argc, char **argv) {
             Mat working_frame = g_current_frame.clone();
             g_has_new_frame = false;
 
+			vector<LaneLine> lines;
+
             #ifdef USE_NEW_PIPELINE
                 // 1. Neue Pipeline
                 pipeline.process(working_frame);
