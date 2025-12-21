@@ -60,7 +60,7 @@ void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside,co
            1);
         int u_val = static_cast<int>(pixel[1]); // u (Kanal 1)
         int v_val = static_cast<int>(pixel[2]); // v (Kanal 2)
-        cout << "u - v: " << u_val <<" - "<<v_val <<"="<<u_val-v_val <<"\n";
+        //cout << "u - v: " << u_val <<" - "<<v_val <<"="<<u_val-v_val <<"\n";
         // "wenn u-v < -15"
         if (u_val - v_val < -15) {
             cout<< "Gefunden bei x=" << current_x << ", u-v=" << (u_val - v_val) << "\n";
@@ -100,9 +100,9 @@ void ColorSpaceScaling::verticalThreeFourthLine() {
     int line_y = (height * 3) / 4;
     int step = max(1, static_cast<int>(width * 0.01));
 
-    cout << "Bildgröße: " << width << "x" << height << "\n";
-    cout << "Scan-Linie bei y=" << line_y << "\n";
-    cout << "Pixel-Abstand: " << step << "px\n";
+    //cout << "Bildgröße: " << width << "x" << height << "\n";
+    //cout << "Scan-Linie bei y=" << line_y << "\n";
+    //cout << "Pixel-Abstand: " << step << "px\n";
     
     // 3. Rufe die korrigierte drawLine auf
     drawLine( 1, step, line_y, startleftside,yuvimage);

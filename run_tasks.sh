@@ -3,6 +3,8 @@
 # Bricht das Skript ab, wenn ein Befehl fehlschlägt (z.B. wenn make Fehler wirft)
 set -e
 
+rm -rf build
+
 echo "Starte Code"
 
 # -p verhindert den Fehler, wenn 'build' schon da ist

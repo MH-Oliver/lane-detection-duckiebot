@@ -120,7 +120,7 @@ cv::Mat RoiSelection::process(cv::Mat Image) {
     cv::Mat mask = cv::Mat::zeros(height, width, CV_8UC1);
 
     // Extra breite Basis unten beibehalten
-    int extra_width = width;
+    int extra_width = width*0.65;
 
     // Die Punkte
     cv::Point p1(0 - extra_width, height);      // Unten Links
