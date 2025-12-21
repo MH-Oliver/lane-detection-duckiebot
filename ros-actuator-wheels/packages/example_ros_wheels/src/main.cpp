@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "core/runtime_config.h"
-#include "core/TRACKING/Tracking.h"
+#include "core/CompareMethod/CompareMethod.h"
 
 using namespace cv;
 using namespace std;
@@ -186,7 +186,7 @@ int driver(int argc, char **argv) {
     string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
 
-    Tracking tracker;
+    CompareMethod compareMethod;
     ros::Duration(1.0).sleep();
     ros::Rate loop_rate(30);
 
@@ -214,7 +214,7 @@ int driver(int argc, char **argv) {
             Mat working_frame = g_current_frame.clone();
             g_has_new_frame = false;
 
-            vector<LaneLine> lines = tracker.generateHoughValuesOntestvideowithTrapezoid(working_frame);
+            vector<LaneLine> lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
 
             if (lines.size() >= 2) {
                 LaneLine line_L = lines[0];
