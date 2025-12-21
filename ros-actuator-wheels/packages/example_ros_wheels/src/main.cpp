@@ -12,7 +12,18 @@
 #include <vector>
 
 #include "core/runtime_config.h"
-#include "core/CompareMethod/CompareMethod.h"
+
+// ==========================================
+// ===  HIER WÄHLEN VOM VERFAHREN  ===
+// ==========================================
+// Kommentiere diese Zeile aus (//), um das ALTE Verfahren zu nutzen.
+#define USE_NEW_PIPELINE
+
+#ifdef USE_NEW_PIPELINE
+    #include "core/PipelineChuckNorris/LineDetectionPipeline.h"
+#else
+    #include "core/CompareMethod/CompareMethod.h"
+#endif
 
 using namespace cv;
 using namespace std;
@@ -186,7 +197,14 @@ int driver(int argc, char **argv) {
     string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
 
-    CompareMethod compareMethod;
+    #ifdef USE_NEW_PIPELINE
+        ROS_INFO(">> Modus: NEUE Pipeline (ChuckNorris) aktiviert");
+        LineDetectionPipeline pipeline;
+    #else
+        ROS_INFO(">> Modus: ALTE CompareMethod aktiviert");
+        CompareMethod compareMethod;
+    #endif
+
     ros::Duration(1.0).sleep();
     ros::Rate loop_rate(30);
 
@@ -214,7 +232,15 @@ int driver(int argc, char **argv) {
             Mat working_frame = g_current_frame.clone();
             g_has_new_frame = false;
 
-            vector<LaneLine> lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
+            #ifdef USE_NEW_PIPELINE
+                // 1. Neue Pipeline
+                pipeline.process(working_frame);
+                // Wähle hier TrackingResult (gefiltert) oder LineDetectionResult (ungefiltert)
+                lines = pipeline.getTrackingResult();
+            #else
+                // 2. Altes Verfahren
+                lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
+            #endif
 
             if (lines.size() >= 2) {
                 LaneLine line_L = lines[0];

@@ -19,12 +19,21 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/core
+  ${PROJECT_SOURCE_DIR}/src/core/PipelineChuckNorris
 )
 
 add_executable(driver_cpp_node
     src/main.cpp
     src/core/runtime_config.cpp
     src/core/CompareMethod/CompareMethod.cpp
+
+    src/core/PipelineChuckNorris/LineDetectionPipeline.cpp
+    src/core/PipelineChuckNorris/A/ColorSpaceScaling.cpp
+    src/core/PipelineChuckNorris/B/NoiseReduction.cpp
+    src/core/PipelineChuckNorris/C/FuzzyCannyEdgeDetection.cpp
+    src/core/PipelineChuckNorris/D/ROISelection.cpp
+    src/core/PipelineChuckNorris/E/LineDetection.cpp
+    src/core/PipelineChuckNorris/F/Tracking.cpp
 )
 
 target_link_libraries(driver_cpp_node
