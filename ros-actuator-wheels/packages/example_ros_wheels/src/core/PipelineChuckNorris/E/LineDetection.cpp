@@ -37,7 +37,7 @@ LaneLine LineDetection::averageTopCandidates(const std::vector<cv::Vec2f>& candi
         sumTheta += candidates[i][1];
     }
 
-    return {sumRho / limit, sumTheta / limit, true};
+    return {sumRho / limit, sumTheta / limit, limit, true};
 }
 
 std::vector<LaneLine> LineDetection::process(cv::Mat binaryEdgeImage) {
