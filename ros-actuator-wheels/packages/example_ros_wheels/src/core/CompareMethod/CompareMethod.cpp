@@ -59,7 +59,6 @@
         Mat blurred;
         GaussianBlur(image, blurred, Size(7, 7), 1.5);
         Canny(blurred, dst, 100, 200, 3);
-        DisplayFourPictures::getInstance().addPictures(dst);
         cvtColor(image, color_dst, COLOR_GRAY2BGR);
 
         vector<Vec4i> lines;
@@ -120,8 +119,6 @@
         }
 
         process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
-
-        DisplayFourPictures::getInstance().showROIComparison(color_dst);
 
         char c = (char)waitKey(30);
         if (c == 27 || c == 'q') break;
@@ -250,15 +247,6 @@ void CompareMethod::generateHoughValuesOntestvideowithTriangle(Mat img) {
         }
 
         process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
-
-
-        DisplayFourPictures::getInstance().showROIComparison(dst);
-        DisplayFourPictures::getInstance().showROIComparison(color_dst);
-        
-
-        
-    
-
 }
 
 vector<LaneLine> CompareMethod::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
