@@ -23,6 +23,7 @@
     #include "core/PipelineChuckNorris/LineDetectionPipeline.h"
 #else
     #include "core/CompareMethod/CompareMethod.h"
+	using LaneLine = LaneLineSimple;
 #endif
 
 using namespace cv;

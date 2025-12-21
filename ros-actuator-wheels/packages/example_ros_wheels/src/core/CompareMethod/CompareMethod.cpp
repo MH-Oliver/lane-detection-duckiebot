@@ -249,7 +249,7 @@ void CompareMethod::generateHoughValuesOntestvideowithTriangle(Mat img) {
         process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
 }
 
-vector<LaneLine> CompareMethod::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
+vector<LaneLineSimple> CompareMethod::generateHoughValuesOntestvideowithTrapezoid(Mat img) {
     Mat image, gray, blurred, dst, color_dst;
    
         image=img.clone();
@@ -322,9 +322,9 @@ vector<LaneLine> CompareMethod::generateHoughValuesOntestvideowithTrapezoid(Mat 
 
         return process(color_dst, avgRhoL, avgThetaL, hasLeft, avgRhoR, avgThetaR, hasRight);
 }
-   vector<LaneLine> CompareMethod::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
-    vector<LaneLine> lines;
-    LaneLine newLine;
+   vector<LaneLineSimple> CompareMethod::process(cv::Mat& visual_img, double rhoL, double thetaL, bool hasLeft, double rhoR, double thetaR, bool hasRight) {
+    vector<LaneLineSimple> lines;
+    LaneLineSimple newLine;
     kfLeft.predict();
     if (hasLeft) {
         Mat measurement = (Mat_<double>(2, 1) << rhoL, thetaL);
