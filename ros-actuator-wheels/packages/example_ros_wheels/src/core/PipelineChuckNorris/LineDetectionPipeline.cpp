@@ -29,8 +29,17 @@ void LineDetectionPipeline::process(Mat image) {
     // 5. Line Detection (Hough)
     LineDetectionResult = E.process(RoiSelectionResult);
 
-    // FIX: Laut Fehlermeldung erwartet Klasse C 'setLineCount' (oder setNumberOfLines)
-    // Stelle sicher, dass der Name mit deiner Klasse FuzzyCannyEdgeDetection übereinstimmt.
+    if (LineDetectionResult.size() >= 2) {
+        LaneLine leftLine = LineDetectionResult[0];
+        LaneLine rightLine = LineDetectionResult[1];
+
+
+        D.setLaneStatus(
+            leftLine.found,  leftLine.rho,  leftLine.theta,
+            rightLine.found, rightLine.rho, rightLine.theta
+        );
+    }
+
     C.setLineCount(E.getLineCount());
 
     // 6. Tracking (Kalman Filter)

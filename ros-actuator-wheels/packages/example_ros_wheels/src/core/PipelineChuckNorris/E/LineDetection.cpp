@@ -20,12 +20,8 @@ double LineDetection::calculateXBottomIntercept(double rho, double theta, int im
 
 LaneLine LineDetection::averageTopCandidates(const std::vector<cv::Vec2f>& candidates) {
     if (candidates.empty()) {
-        return {0.0, 0.0, false};
+        return {0.0, 0.0, 0, false};
     }
-
-    // "three highest accumulated candidates".
-    // cv::HoughLines sortiert den Output bereits nach "Votes" (best first).
-    // Wir nehmen also einfach die ersten 3 (oder weniger, wenn weniger gefunden).
 
     int limit = std::min((int)candidates.size(), 3);
 
@@ -36,8 +32,7 @@ LaneLine LineDetection::averageTopCandidates(const std::vector<cv::Vec2f>& candi
         sumRho += candidates[i][0];
         sumTheta += candidates[i][1];
     }
-
-    return {sumRho / limit, sumTheta / limit, true};
+    return {sumRho / limit, sumTheta / limit, (int)candidates.size(), true};
 }
 
 std::vector<LaneLine> LineDetection::process(cv::Mat binaryEdgeImage) {
