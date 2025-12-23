@@ -33,14 +33,14 @@ using namespace std;
 const double SPEED = 0.2;
 
 // PID Parameter (Etwas sanfter eingestellt)
-const double KP = 0.45; // Vorher 0.18 -> Deutlich erhöht für stärkere Kurven
+const double KP = 0.32; // Vorher 0.18 -> Deutlich erhöht für stärkere Kurven
 const double KI = 0.00;
 const double KD = 0.25; // Reduziert (war 0.4), da der D-Anteil das Zittern verursacht
 
 // Bild Dimensionen
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
-const int LOOKAHEAD_Y = 280; // Wenn möglich, teste hier mal 380-400 für bessere Kurven
+const int LOOKAHEAD_Y = 380; // Wenn möglich, teste hier mal 380-400 für bessere Kurven
 
 // NEU: Parameter für Glättung
 const double ALPHA = 0.7; // Glättungsfaktor (0.0 bis 1.0). 1.0 = Keine Glättung. 0.1 = Starke Glättung.
