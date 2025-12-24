@@ -30,7 +30,7 @@ using namespace cv;
 using namespace std;
 
 // === Parameter ===
-const double SPEED = 0.2;
+const double SPEED = 0.25;
 
 // PID Parameter (Etwas sanfter eingestellt)
 const double KP = 0.32; // Vorher 0.18 -> Deutlich erhöht für stärkere Kurven
