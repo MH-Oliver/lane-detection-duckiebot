@@ -214,6 +214,8 @@ void stop_wheels(ros::Publisher& publisher) {
     ros::Duration(1.0).sleep();
 }
 
+// ... (Includes und setup_lights Funktion bleiben gleich) ...
+
 int driver(int argc, char **argv) {
     g_robot_name = get_robot_name();
     ros::init(argc, argv, "lane_follower_driver", ros::init_options::AnonymousName);
@@ -225,10 +227,12 @@ int driver(int argc, char **argv) {
     string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
 
-	string topic_led = "/" + g_robot_name + "/led_driver_node/led_pattern";
-    // latch=true (der 3. Parameter) sorgt dafür, dass die Nachricht "hängen bleibt",
-    // auch wenn wir sie nur einmal senden.
-    ros::Publisher led_pub = n.advertise<duckietown_msgs::LEDPattern>(topic_led, 1, true);
+    string topic_led = "/" + g_robot_name + "/led_driver_node/led_pattern";
+    // DEBUG-AUSGABE: Prüfen Sie in der Konsole, ob hier der richtige Robotername steht!
+    ROS_INFO("LED Topic: %s", topic_led.c_str());
+
+    // Wir entfernen latch=true, da wir es jetzt eh regelmäßig senden
+    ros::Publisher led_pub = n.advertise<duckietown_msgs::LEDPattern>(topic_led, 1);
 
     #ifdef USE_NEW_PIPELINE
         ROS_INFO(">> Modus: NEUE Pipeline (ChuckNorris) aktiviert");
@@ -238,17 +242,19 @@ int driver(int argc, char **argv) {
         CompareMethod compareMethod;
     #endif
 
+    // Initial einmal warten
     ros::Duration(1.0).sleep();
 
-	setup_lights(led_pub);
+    // setup_lights(led_pub); <--- HIER RAUSNEHMEN, wir machen das unten im Loop
 
     ros::Rate loop_rate(30);
-
-    // WICHTIG: Hier wieder schneller werden, damit der Regler "fein" arbeiten kann.
-    // Die Ruhe kommt jetzt durch den Filter (ALPHA), nicht durch Warten.
-    const double PROCESS_INTERVAL = 0.08; // ca. 12 Hz
+    const double PROCESS_INTERVAL = 0.08;
 
     ros::Time last_process_time = ros::Time::now();
+
+    // NEU: Timer für LEDs
+    ros::Time last_led_time = ros::Time(0);
+
     ros::Time start_time = ros::Time::now();
     while (start_time.toSec() == 0) {
         start_time = ros::Time::now();
@@ -256,40 +262,42 @@ int driver(int argc, char **argv) {
     }
 
     double elapsed_sec = 0;
-
     ROS_INFO("Starte Smoothed Lane Following...");
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
         ros::spinOnce();
-        elapsed_sec = (ros::Time::now() - start_time).toSec();
-        double time_since_process = (ros::Time::now() - last_process_time).toSec();
+        ros::Time current_time = ros::Time::now();
+        elapsed_sec = (current_time - start_time).toSec();
+        double time_since_process = (current_time - last_process_time).toSec();
+
+        // --- NEU: LEDs alle 2 Sekunden erzwingen ---
+        // Das überschreibt alle anderen Nodes, die die Lampen ausschalten wollen.
+        if ((current_time - last_led_time).toSec() > 2.0) {
+            setup_lights(led_pub);
+            last_led_time = current_time;
+        }
+        // -------------------------------------------
 
         if (time_since_process >= PROCESS_INTERVAL && g_has_new_frame && !g_current_frame.empty()) {
-            Mat working_frame = g_current_frame.clone();
-            g_has_new_frame = false;
+             Mat working_frame = g_current_frame.clone();
+             g_has_new_frame = false;
+             vector<LaneLine> lines;
 
-			vector<LaneLine> lines;
-
-            #ifdef USE_NEW_PIPELINE
-                // 1. Neue Pipeline
+             #ifdef USE_NEW_PIPELINE
                 pipeline.process(working_frame);
-                // Wähle hier TrackingResult (gefiltert) oder LineDetectionResult (ungefiltert)
                 lines = pipeline.getTrackingResult();
-            #else
-                // 2. Altes Verfahren
+             #else
                 lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
-            #endif
+             #endif
 
-            if (lines.size() >= 2) {
+             if (lines.size() >= 2) {
                 LaneLine line_L = lines[0];
                 LaneLine line_R = lines[1];
                 follow_lane(publisher, line_L, line_R);
-            } else {
+             } else {
                 ROS_WARN("Linien verloren - halte Kurs");
-                // Optional: publish_steering(publisher, pid_state.last_steering_output);
-            }
-
-            last_process_time = ros::Time::now();
+             }
+             last_process_time = ros::Time::now();
         }
         loop_rate.sleep();
     }
