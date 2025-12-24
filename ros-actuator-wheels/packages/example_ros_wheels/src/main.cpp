@@ -4,6 +4,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/opencv.hpp>
+#include <duckietown_msgs/LEDPattern.h>
+#include <std_msgs/ColorRGBA.h>
 
 #include <string>
 #include <cstdlib>
@@ -79,6 +81,31 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     } catch (cv_bridge::Exception& e) {
         ROS_ERROR("cv_bridge exception: %s", e.what());
     }
+}
+
+void setup_lights(ros::Publisher& led_pub) {
+    duckietown_msgs::LEDPattern msg;
+
+    // Farbe definieren: Weiß mit voller Intensität (a=1.0)
+    std_msgs::ColorRGBA white;
+    white.r = 1.0;
+    white.g = 1.0;
+    white.b = 1.0;
+    white.a = 1.0; // Intensität (0.0 bis 1.0). Ggf. auf 0.5 reduzieren, falls zu hell.
+
+    // Farbe definieren: Aus (Schwarz)
+    std_msgs::ColorRGBA off;
+    off.r = 0.0; off.g = 0.0; off.b = 0.0; off.a = 0.0;
+
+    // Der Vektor muss genau 5 Elemente haben
+    msg.rgb_vals.push_back(white); // 0: Vorne Links -> AN
+    msg.rgb_vals.push_back(off);   // 1: Hinten Links
+    msg.rgb_vals.push_back(off);   // 2: Oben
+    msg.rgb_vals.push_back(off);   // 3: Hinten Rechts
+    msg.rgb_vals.push_back(white); // 4: Vorne Rechts -> AN
+
+    // Nachricht senden
+    led_pub.publish(msg);
 }
 
 double get_x_at_y(const LaneLine& line, int y) {
@@ -198,6 +225,11 @@ int driver(int argc, char **argv) {
     string topic_cam = "/" + g_robot_name + "/camera_node/image/compressed";
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
 
+	string topic_led = "/" + g_robot_name + "/led_driver_node/led_pattern";
+    // latch=true (der 3. Parameter) sorgt dafür, dass die Nachricht "hängen bleibt",
+    // auch wenn wir sie nur einmal senden.
+    ros::Publisher led_pub = n.advertise<duckietown_msgs::LEDPattern>(topic_led, 1, true);
+
     #ifdef USE_NEW_PIPELINE
         ROS_INFO(">> Modus: NEUE Pipeline (ChuckNorris) aktiviert");
         LineDetectionPipeline pipeline;
@@ -207,6 +239,9 @@ int driver(int argc, char **argv) {
     #endif
 
     ros::Duration(1.0).sleep();
+
+	setup_lights(led_pub);
+
     ros::Rate loop_rate(30);
 
     // WICHTIG: Hier wieder schneller werden, damit der Regler "fein" arbeiten kann.
