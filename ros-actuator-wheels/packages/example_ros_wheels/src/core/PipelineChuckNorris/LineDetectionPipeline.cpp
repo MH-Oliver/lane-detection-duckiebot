@@ -41,7 +41,7 @@ void LineDetectionPipeline::process(Mat image) {
         );
     }
 
-    ROS_INFO("LineCount: %.2f", E.getLineCount());
+    ROS_INFO("LineCount: %d", E.getLineCount());
     C.setLineCount(E.getLineCount());
 
     // 6. Tracking (Kalman Filter)
