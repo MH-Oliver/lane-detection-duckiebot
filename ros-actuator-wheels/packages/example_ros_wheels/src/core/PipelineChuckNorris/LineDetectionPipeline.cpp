@@ -1,4 +1,5 @@
 #include "LineDetectionPipeline.h"
+#include <ros/ros.h>
 
 // Konstruktoren müssen in der .cpp definiert werden
 LineDetectionPipeline::LineDetectionPipeline() {
@@ -40,7 +41,7 @@ void LineDetectionPipeline::process(Mat image) {
         );
     }
 
-    ROS_WARN("LineCount: %.2f", E.getLineCount());
+    ROS_INFO("LineCount: %.2f", E.getLineCount());
     C.setLineCount(E.getLineCount());
 
     // 6. Tracking (Kalman Filter)
