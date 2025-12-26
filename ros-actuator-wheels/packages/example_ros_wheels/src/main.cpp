@@ -229,7 +229,7 @@ int driver(int argc, char **argv) {
 
     string topic_led = "/" + g_robot_name + "/led_driver_node/led_pattern";
     // DEBUG-AUSGABE: Prüfen Sie in der Konsole, ob hier der richtige Robotername steht!
-    ROS_INFO("LED Topic: %s", topic_led.c_str());
+    //ROS_INFO("LED Topic: %s", topic_led.c_str());
 
     // Wir entfernen latch=true, da wir es jetzt eh regelmäßig senden
     ros::Publisher led_pub = n.advertise<duckietown_msgs::LEDPattern>(topic_led, 1);
@@ -262,7 +262,7 @@ int driver(int argc, char **argv) {
     }
 
     double elapsed_sec = 0;
-    ROS_INFO("Starte Smoothed Lane Following...");
+  
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
         ros::spinOnce();
