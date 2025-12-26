@@ -302,6 +302,14 @@ int driver(int argc, char **argv) {
 			    LaneLine line_L = lines[0];
 			    LaneLine line_R = lines[1];
 
+
+				// Fallback Lösung, da ChuckNorris am Anfang
+				// 	sich erst einpendeln muss und daher in den ersten Sekunden keine Ergebnisse liefert
+				if (successful_frames == 0) {
+					successful_frames = 1;
+					total_frames_processed = 1;
+				}
+
     			// --- SANITY CHECK---
     			// Berechne Punkte auf Höhe des Lookaheads
     			double x_left = get_x_at_y(line_L, LOOKAHEAD_Y);
@@ -309,7 +317,7 @@ int driver(int argc, char **argv) {
     			double width = std::abs(x_right - x_left);
 
 			    // Nur wenn die Breite physikalisch Sinn ergibt (z.B. 150 bis 450 Pixel),
-				ROS_INFO("width: %.1f", width);
+				//ROS_INFO("width: %.1f", width);
     			if (width > MIN_WIDTH && width < MAX_WIDTH) {
         			valid_detection = true;
     			}
