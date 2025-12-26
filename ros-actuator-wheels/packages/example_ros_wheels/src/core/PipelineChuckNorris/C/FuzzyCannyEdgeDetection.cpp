@@ -33,8 +33,8 @@ void FuzzyCannyEdgeDetection::fuzzyRefreshThresholds (int NumberOfLinesLastFrame
     double muTooFew   = tooFewMF(NumberOfLinesLastFrame, 2, 45);
     double muFew      = triangleMF(NumberOfLinesLastFrame, 40, 50, 60);
     double muGood     = triangleMF(NumberOfLinesLastFrame, 50, 55, 60);
-    double muMany     = triangleMF(NumberOfLinesLastFrame, 50, 60, 70);
-    double muTooMany  = tooManyMF(NumberOfLinesLastFrame, 65, 120);
+    double muMany     = triangleMF(NumberOfLinesLastFrame, 50, 65, 80);
+    double muTooMany  = tooManyMF(NumberOfLinesLastFrame, 70, 1000);
 
     // Regelbasis anwenden
     double adjustment = 0.0;
