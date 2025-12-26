@@ -149,7 +149,7 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
     double current_width = x_right - x_left;
     if (current_width < 150 || current_width > 400) {
         // Bei invaliden Daten einfach geradeaus (oder alten Wert halten)
-        ROS_WARN("Ungueltige Breite: %.2f", current_width);
+        //ROS_WARN("Ungueltige Breite: %.2f", current_width);
         // Optional: return; um nichts zu tun, oder weiterrechnen mit Risiko
     }
 
@@ -294,7 +294,25 @@ int driver(int argc, char **argv) {
              #endif
 
 			total_frames_processed++;
+			bool valid_detection = false;
+
 			if (lines.size() >= 2) {
+			    LaneLine line_L = lines[0];
+			    LaneLine line_R = lines[1];
+
+    			// --- SANITY CHECK---
+    			// Berechne Punkte auf Höhe des Lookaheads
+    			double x_left = get_x_at_y(line_L, LOOKAHEAD_Y);
+    			double x_right = get_x_at_y(line_R, LOOKAHEAD_Y);
+    			double width = x_right - x_left;
+
+			    // Nur wenn die Breite physikalisch Sinn ergibt (z.B. 150 bis 450 Pixel),
+    			if (width > 150 && width < 450) {
+        			valid_detection = true;
+    			}
+			}
+
+			if (valid_detection) {
     			successful_frames++;
 			}
 
