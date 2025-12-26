@@ -47,6 +47,8 @@ const int LOOKAHEAD_Y = 380; // Wenn möglich, teste hier mal 380-400 für besse
 // NEU: Parameter für Glättung
 const double ALPHA = 0.7; // Glättungsfaktor (0.0 bis 1.0). 1.0 = Keine Glättung. 0.1 = Starke Glättung.
 const int MAX_STEERING_CHANGE = 30; // Maximale Änderung der Lenkung pro Schritt (verhindert Zucken)
+const int MIN_WIDTH = 425;
+const int MAX_WIDTH = 475;
 
 struct PIDState {
     double prev_error;
@@ -147,7 +149,7 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     // Sanity Check
     double current_width = x_right - x_left;
-    if (current_width < 150 || current_width > 400) {
+    if (current_width < MIN_WIDTH || current_width > MAX_WIDTH) {
         // Bei invaliden Daten einfach geradeaus (oder alten Wert halten)
         //ROS_WARN("Ungueltige Breite: %.2f", current_width);
         // Optional: return; um nichts zu tun, oder weiterrechnen mit Risiko
@@ -308,7 +310,7 @@ int driver(int argc, char **argv) {
 
 			    // Nur wenn die Breite physikalisch Sinn ergibt (z.B. 150 bis 450 Pixel),
 				ROS_INFO("width: %.1f", width);
-    			if (width > 150 && width < 450) {
+    			if (width > MIN_WIDTH && width < MAX_WIDTH) {
         			valid_detection = true;
     			}
 			}
