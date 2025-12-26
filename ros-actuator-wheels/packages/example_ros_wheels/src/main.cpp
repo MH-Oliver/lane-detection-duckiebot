@@ -19,7 +19,7 @@
 // ===  HIER WÄHLEN VOM VERFAHREN  ===
 // ==========================================
 // Kommentiere diese Zeile aus (//), um das ALTE Verfahren zu nutzen.
-#define USE_NEW_PIPELINE
+//#define USE_NEW_PIPELINE
 
 #ifdef USE_NEW_PIPELINE
     #include "core/PipelineChuckNorris/LineDetectionPipeline.h"
@@ -344,6 +344,9 @@ int driver(int argc, char **argv) {
         }
         loop_rate.sleep();
     }
+
+	double rate = 100.0 * (double)successful_frames / total_frames_processed;
+    ROS_INFO("Finaler-Verfahren-Score: %.1f %% Frames mit 2 Linien", rate);
 
     stop_wheels(publisher);
     return 0;
