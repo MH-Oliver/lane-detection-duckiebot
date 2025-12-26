@@ -50,7 +50,7 @@ void FuzzyCannyEdgeDetection::fuzzyRefreshThresholds (int NumberOfLinesLastFrame
 
     // Thresholds aktualisieren
     m_UpperThreshold += adjustment;
-    std::cerr << "m_UpperThreshold = " << m_UpperThreshold << std::endl;
+    //std::cerr << "m_UpperThreshold = " << m_UpperThreshold << std::endl;
     //m_UpperThreshold = std::clamp(m_UpperThreshold, 30, 200); //clamping gibts erst ab c++17
     m_LowerThreshold = m_UpperThreshold / 3.0;
 }
