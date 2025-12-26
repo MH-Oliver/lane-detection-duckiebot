@@ -262,6 +262,9 @@ int driver(int argc, char **argv) {
     }
 
     double elapsed_sec = 0;
+
+	long total_frames_processed = 0;
+	long successful_frames = 0;
   
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
@@ -289,6 +292,17 @@ int driver(int argc, char **argv) {
              #else
                 lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
              #endif
+
+			total_frames_processed++;
+			if (lines.size() >= 2) {
+    			successful_frames++;
+			}
+
+			// Nur alle 100 Frames mal ausgeben, um die Konsole nicht zu fluten
+			if (total_frames_processed % 100 == 0) {
+    			double rate = 100.0 * (double)successful_frames / total_frames_processed;
+    			ROS_INFO("Verfahren-Score: %.1f %% Frames mit 2 Linien", rate);
+			}
 
              if (lines.size() >= 2) {
                 LaneLine line_L = lines[0];
