@@ -96,10 +96,10 @@ Mat ColorSpaceScaling::process(Mat image) {
     verticalThreeFourthLine();
 
     if(m_imageFlagYuv == 0){
-        cout << " greyscale aufgerufen\n";
+        //cout << " greyscale aufgerufen\n";
         greyScaleBGRTOGREY();
     } else {
-        cout << " yuvscale aufgerufen\n";
+        //cout << " yuvscale aufgerufen\n";
         yuvScale();
     }
 

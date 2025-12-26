@@ -304,9 +304,10 @@ int driver(int argc, char **argv) {
     			// Berechne Punkte auf Höhe des Lookaheads
     			double x_left = get_x_at_y(line_L, LOOKAHEAD_Y);
     			double x_right = get_x_at_y(line_R, LOOKAHEAD_Y);
-    			double width = x_right - x_left;
+    			double width = std::abs(x_right - x_left);
 
 			    // Nur wenn die Breite physikalisch Sinn ergibt (z.B. 150 bis 450 Pixel),
+				ROS_INFO("width: %.1f", width);
     			if (width > 150 && width < 450) {
         			valid_detection = true;
     			}

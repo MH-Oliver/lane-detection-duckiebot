@@ -46,8 +46,8 @@ std::vector<LaneLine> LineDetection::process(cv::Mat binaryEdgeImage) {
     //---- Setze linienanzahl für canny
     setLineCount(static_cast<int>(rawLines.size()));
     // DEBUG:
-    std::cout << "------------------------------------------------" << std::endl;
-    std::cout << "Hough hat " << rawLines.size() << " rohe Linien gefunden (Threshold: " << m_houghThreshold << ")" << std::endl;
+    //std::cout << "------------------------------------------------" << std::endl;
+    //std::cout << "Hough hat " << rawLines.size() << " rohe Linien gefunden (Threshold: " << m_houghThreshold << ")" << std::endl;
 
     std::vector<cv::Vec2f> leftCandidates;
     std::vector<cv::Vec2f> rightCandidates;
@@ -87,7 +87,7 @@ std::vector<LaneLine> LineDetection::process(cv::Mat binaryEdgeImage) {
         }
     }
 
-    std::cout << "Kandidaten uebrig -> Links: " << leftCandidates.size() << ", Rechts: " << rightCandidates.size() << std::endl;
+    //std::cout << "Kandidaten uebrig -> Links: " << leftCandidates.size() << ", Rechts: " << rightCandidates.size() << std::endl;
 
     // 3. Averaging
     LaneLine leftResult = averageTopCandidates(leftCandidates);
