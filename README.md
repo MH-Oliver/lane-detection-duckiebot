@@ -1,134 +1,32 @@
-# Code Examples
+# Duckiebot Lane Following (C++)
 
-This repository is a collection of simple DTProjects that you can use as a starting point for the development of more complex behaviors for your Duckietown robots. For further information about what a DTProject is and how to use it, we suggest you follow 
-the [official tutorial](https://docs.duckietown.com/daffy/devmanual-software/beginner/dtproject/index.html).
+Dieses Repository beinhaltet einen ROS-Node für das autonome Spurhalten (Lane Following) eines Duckiebots. Der Code implementiert die komplette Kette von der Bildverarbeitung bis zur Motorsteuerung.
 
+## Überblick
 
-## Structure
+Das Projekt ist modular aufgebaut und ermöglicht den Vergleich zwischen zwei verschiedenen Verfahren zur Linienerkennung:
 
-Each directory in this repository contains an independent DTProject. Each project is built and executed the same way, the only thing that changes is the content of their `packages/` directory, which is the place where the specific behavior is implemented.
+1.  **LineDetectionPipeline ("Chuck Norris"):** Das primäre, neu entwickelte Verfahren. Es nutzt eine mehrstufige Pipeline (adaptive Vorverarbeitung, Fuzzy-Logik, Kalman-Filterung), um robust auf unterschiedliche Lichtverhältnisse und Störungen zu reagieren.
+    * *Details zu diesem Verfahren sind im zugehörigen Paper dokumentiert.*
+2.  **CompareMethod:** Ein klassischer Referenz-Algorithmus basierend auf Standard-Verfahren (statische Thresholds, einfaches ROI), der zum Leistungsvergleich dient.
 
-## Examples
+Die Steuerung des Roboters erfolgt in beiden Fällen über einen geglätteten **PID-Regler**.
 
-A detailed list of the examples stored in this repository follows,
+## Struktur
 
----
+Die Codebasis ist wie folgt organisiert:
 
-### ROS - Sensor - Camera - (💬 Make it see)
+* **`src/main.cpp`**: Der Haupttreiber. Hier laufen die ROS-Kommunikation, der PID-Regler und die Auswahl des Verfahrens zusammen.
+* **`src/core/PipelineChuckNorris/`**: Enthält den modularen Code des neuen Verfahrens (Color Space Scaling, Noise Reduction, Fuzzy Canny, ROI, Hough, Tracking).
+* **`src/core/CompareMethod/`**: Enthält den Code des Referenz-Verfahrens.
+* **`src/core/runtime_config.cpp`**: Konfiguration der Laufzeitdauer.
 
-This example shows how to subscribe to a continuous stream of camera frames via ROS.
+## Konfiguration & Nutzung
 
-> **Location:** [`./ros-sensor-camera/`](./ros-sensor-camera/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux, MacOS* \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
+### Verfahren auswählen
 
-* **NOTE:** This example requires a window to be opened for the live stream to be shown. Newer versions of MacOS do not support this.
+In der Datei `src/main.cpp` kann über ein Define gesteuert werden, welche Pipeline genutzt wird:
 
-
----
-
-
-### ROS - Actuator - LEDs - (💬 Make it blink)
-
-This example shows how to control a vehicle's lights via ROS.
-
-> **Location:** [`./ros-actuator-leds/`](./ros-actuator-leds/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
----
-
-
-### ROS - Actuator - Display (💬 Make it paint)
-
-This example shows how to display a message on a robot's LCD screen in ROS.
-
-> **Location:** [`./ros-actuator-display/`](./ros-actuator-display/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
-
----
-
-
-### ROS - Actuator - Wheels - (💬 Make it move)
-
-This example shows how to control a vehicle's motors via ROS.
-
-> **Location:** [`./ros-actuator-wheels/`](./ros-actuator-wheels/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
----
-
-
-### ROS - Sensor - Time-of-Flight
-
-This example shows how to measure the distance to the closest object using a robot's time-of-flight sensor in ROS.
-
-> **Location:** [`./ros-sensor-tof/`](./ros-sensor-tof/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux, MacOS \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
----
-
-
-### ROS - Sensor - IMU
-
-This example shows how to read a robot's IMU data in ROS.
-
-> **Location:** [`./ros-sensor-imu/`](./ros-sensor-imu/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux, MacOS \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
----
-
-
-### ROS - Sensor - Power Button
-
-This example shows how to detect the user input from a robot's power button in ROS.
-
-> **Location:** [`./ros-sensor-button/`](./ros-sensor-button/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux, MacOS \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
-
-
----
-
-
-### ROS - Sensor - Wheel Encoder
-
-This example shows how to read a robot's wheel encoder data in ROS.
-
-> **Location:** [`./ros-sensor-wheel-encoder/`](./ros-sensor-wheel-encoder/) \
-**Framework:** `ROS1` \
-**Supported Robots:** Any \
-**Supported OSs:** Linux, MacOS \
----------------- \
-![badge](https://shields.io/badge/status-ready-green?&style=plastic)
+```cpp
+// Einkommentieren für neue Pipeline, auskommentieren für alte Methode
+#define USE_NEW_PIPELINE
