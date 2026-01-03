@@ -1,13 +1,8 @@
 #include "LineDetectionPipeline.h"
 
-// Konstruktoren müssen in der .cpp definiert werden
-LineDetectionPipeline::LineDetectionPipeline() {
-    // Initialisierung falls nötig
-}
+LineDetectionPipeline::LineDetectionPipeline() {}
 
-LineDetectionPipeline::~LineDetectionPipeline() {
-    // Aufräumarbeiten falls nötig
-}
+LineDetectionPipeline::~LineDetectionPipeline() {}
 
 void LineDetectionPipeline::process(Mat image) {
     if (image.empty()) return;
@@ -45,5 +40,4 @@ void LineDetectionPipeline::process(Mat image) {
     // 6. Tracking (Kalman Filter)
     TrackingResult = F.process(LineDetectionResult);
 
-    // --- PIPELINE ENDE ---
 }

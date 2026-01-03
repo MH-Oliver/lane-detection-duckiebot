@@ -50,8 +50,6 @@ void FuzzyCannyEdgeDetection::fuzzyRefreshThresholds (int NumberOfLinesLastFrame
 
     // Thresholds aktualisieren
     m_UpperThreshold += adjustment;
-    //std::cerr << "m_UpperThreshold = " << m_UpperThreshold << std::endl;
-    //m_UpperThreshold = std::clamp(m_UpperThreshold, 30, 200); //clamping gibts erst ab c++17
     m_LowerThreshold = m_UpperThreshold / 3.0;
 }
 
@@ -63,8 +61,7 @@ cv::Mat FuzzyCannyEdgeDetection::applyCannyEdgeDetection(cv::Mat image) {
     cv::Canny(image, edges, m_LowerThreshold, m_UpperThreshold);
 
     // Anzahl der erkannten linien zählen
-    //m_NumberLinesLastFrame = D.Anzahlerkanntelinien; //statisches attribut //TODO
-    m_NumberOfLinesLastFrame = getNumberOfLines(); //platzhalter, eigentlich anzahl erkannter linien aus der pipeline-Klasse D nutzen.
+    m_NumberOfLinesLastFrame = getNumberOfLines();
 
 	// Thresholds entsprechend der detektierten Linien aktualisieren
 	fuzzyRefreshThresholds(m_NumberOfLinesLastFrame);

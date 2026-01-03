@@ -25,13 +25,13 @@ void ColorSpaceScaling::yuvScale() {
     if (m_image.empty()) {
         throw invalid_argument("No image is provided");
     } else {
-        // Hinweis: Wenn u=Cb und v=Cr ist, COLOR_BGR2YCrCb oder BGR2YUV prüfen
+   
         cvtColor(m_image, m_image, COLOR_BGR2YUV);
     }
 }
 
 void ColorSpaceScaling::drawLine(int k, int step, int y_line, int starlefside, const Mat& yuvImage) {
-    int current_x = 0; // Die X-Position, die wir scannen
+    int current_x = 0;
 
     if (k == 1) {
         current_x = starlefside;
@@ -96,10 +96,8 @@ Mat ColorSpaceScaling::process(Mat image) {
     verticalThreeFourthLine();
 
     if(m_imageFlagYuv == 0){
-        //cout << " greyscale aufgerufen\n";
         greyScaleBGRTOGREY();
     } else {
-        //cout << " yuvscale aufgerufen\n";
         yuvScale();
     }
 

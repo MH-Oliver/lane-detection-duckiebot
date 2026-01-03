@@ -34,10 +34,6 @@ private:
     ~LineDetectionPipeline();
     void process(Mat image);
 
-
-    // --- Getter-Methoden ---
-
-    // Mat-Ergebnisse (Rückgabe als Referenz spart Performance)
     const Mat& getColorSpaceScalingResult() const { return ColorSpaceScalingResult; }
     const Mat& getNoiseReductionResult() const { return NoiseReductionResult; }
     const Mat& getFuzzyEdgeDetectionResult() const { return FuzzyEdgeDetectionResult; }

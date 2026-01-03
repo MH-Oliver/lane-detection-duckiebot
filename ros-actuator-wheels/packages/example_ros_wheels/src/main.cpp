@@ -16,46 +16,42 @@
 #include "core/runtime_config.h"
 
 // ==========================================
-// ===  HIER WÄHLEN VOM VERFAHREN  ===
+// ===      PIPELINE KONFIGURATION        ===
 // ==========================================
-// Kommentiere diese Zeile aus (//), um das ALTE Verfahren zu nutzen.
+// Einkommentieren für neue Pipeline, auskommentieren für alte Methode.
 //#define USE_NEW_PIPELINE
 
 #ifdef USE_NEW_PIPELINE
     #include "core/PipelineChuckNorris/LineDetectionPipeline.h"
 #else
     #include "core/CompareMethod/CompareMethod.h"
-	using LaneLine = LaneLineSimple;
+    using LaneLine = LaneLineSimple;
 #endif
 
 using namespace cv;
 using namespace std;
 
-// === Parameter ===
+// === Regelungs-Parameter ===
 const double SPEED = 0.25;
-
-// PID Parameter (Etwas sanfter eingestellt)
-const double KP = 0.32; // Vorher 0.18 -> Deutlich erhöht für stärkere Kurven
+const double KP = 0.32;
 const double KI = 0.00;
-const double KD = 0.25; // Reduziert (war 0.4), da der D-Anteil das Zittern verursacht
+const double KD = 0.25;
 
-// Bild Dimensionen
+// === Bild & Spur Parameter ===
 const int IMG_WIDTH = 640;
 const int IMG_HEIGHT = 480;
-const int LOOKAHEAD_Y = 380; // Wenn möglich, teste hier mal 380-400 für bessere Kurven
-
-// NEU: Parameter für Glättung
-const double ALPHA = 0.7; // Glättungsfaktor (0.0 bis 1.0). 1.0 = Keine Glättung. 0.1 = Starke Glättung.
-const int MAX_STEERING_CHANGE = 30; // Maximale Änderung der Lenkung pro Schritt (verhindert Zucken)
+const int LOOKAHEAD_Y = 380;
 const int MIN_WIDTH = 410;
 const int MAX_WIDTH = 460;
+
+// === Glättung & Limits ===
+const double ALPHA = 0.7;           // Glättungsfaktor (0.0 - 1.0)
+const int MAX_STEERING_CHANGE = 30; // Max Lenkänderung pro Schritt (Slew Rate)
 
 struct PIDState {
     double prev_error;
     double integral;
     ros::Time last_time;
-
-    // NEU: Speicher für Glättung
     double prev_smoothed_error;
     int last_steering_output;
 
@@ -63,7 +59,7 @@ struct PIDState {
                  prev_smoothed_error(0), last_steering_output(0) {}
 };
 
-// Globale Variablen
+// === Globale Variablen ===
 PIDState pid_state;
 Mat g_current_frame;
 bool g_has_new_frame = false;
@@ -71,8 +67,7 @@ string g_robot_name;
 
 string get_robot_name() {
     const char* robot_name_env = std::getenv("VEHICLE_NAME");
-    if (!robot_name_env) return "zeta";
-    return string(robot_name_env);
+    return robot_name_env ? string(robot_name_env) : "zeta";
 }
 
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
@@ -87,26 +82,13 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
 
 void setup_lights(ros::Publisher& led_pub) {
     duckietown_msgs::LEDPattern msg;
+    std_msgs::ColorRGBA white, off;
 
-    // Farbe definieren: Weiß mit voller Intensität (a=1.0)
-    std_msgs::ColorRGBA white;
-    white.r = 1.0;
-    white.g = 1.0;
-    white.b = 1.0;
-    white.a = 1.0; // Intensität (0.0 bis 1.0). Ggf. auf 0.5 reduzieren, falls zu hell.
-
-    // Farbe definieren: Aus (Schwarz)
-    std_msgs::ColorRGBA off;
+    white.r = 1.0; white.g = 1.0; white.b = 1.0; white.a = 1.0;
     off.r = 0.0; off.g = 0.0; off.b = 0.0; off.a = 0.0;
 
-    // Der Vektor muss genau 5 Elemente haben
-    msg.rgb_vals.push_back(white); // 0: Vorne Links -> AN
-    msg.rgb_vals.push_back(off);   // 1: Hinten Links
-    msg.rgb_vals.push_back(off);   // 2: Oben
-    msg.rgb_vals.push_back(off);   // 3: Hinten Rechts
-    msg.rgb_vals.push_back(white); // 4: Vorne Rechts -> AN
-
-    // Nachricht senden
+    // Mapping: 0=FL, 1=BL, 2=Top, 3=BR, 4=FR
+    msg.rgb_vals = {white, off, off, off, white};
     led_pub.publish(msg);
 }
 
@@ -116,20 +98,16 @@ double get_x_at_y(const LaneLine& line, int y) {
 }
 
 void publish_steering(ros::Publisher& publisher, int steering) {
-    if (steering > 100) steering = 100;
-    if (steering < -100) steering = -100;
+    steering = std::max(-100, std::min(100, steering));
 
     double ratio = steering / 100.0;
     double v_linear = SPEED * (1.0 - std::abs(ratio));
     double v_angular = SPEED * ratio;
 
-    double vel_left = v_linear + v_angular;
-    double vel_right = v_linear - v_angular;
-
     duckietown_msgs::WheelsCmdStamped msg;
     msg.header.stamp = ros::Time::now();
-    msg.vel_left = vel_left;
-    msg.vel_right = vel_right;
+    msg.vel_left = v_linear + v_angular;
+    msg.vel_right = v_linear - v_angular;
     publisher.publish(msg);
 }
 
@@ -141,46 +119,25 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
         return;
     }
 
-    double dt = (now - pid_state.last_time).toSec();
-    if (dt < 0.001) dt = 0.001;
+    double dt = std::max(0.001, (now - pid_state.last_time).toSec());
 
     double x_left = get_x_at_y(left_line, LOOKAHEAD_Y);
     double x_right = get_x_at_y(right_line, LOOKAHEAD_Y);
 
-    // Sanity Check
-    double current_width = x_right - x_left;
-    if (current_width < 150 || current_width > 400) {
-        // Bei invaliden Daten einfach geradeaus (oder alten Wert halten)
-        //ROS_WARN("Ungueltige Breite: %.2f", current_width);
-        // Optional: return; um nichts zu tun, oder weiterrechnen mit Risiko
-    }
-
     double lane_center_x = (x_left + x_right) / 2.0;
     double target_x = IMG_WIDTH / 2.0;
-
-    // Roher Fehler
     double raw_error = lane_center_x - target_x;
 
-    // === 1. GLÄTTUNG (Exponential Moving Average) ===
-    // Neuer geglätteter Wert = (Alpha * Aktuell) + ((1-Alpha) * Alt)
-    // Wenn ALPHA = 0.7: Wir vertrauen dem neuen Wert zu 70% und dem alten zu 30%.
-    // Das dämpft das "Rauschen" der Kamera.
+    // 1. Exponential Moving Average Filter
     double smoothed_error = (ALPHA * raw_error) + ((1.0 - ALPHA) * pid_state.prev_smoothed_error);
-
-    // Speichern für nächsten Loop
     pid_state.prev_smoothed_error = smoothed_error;
 
-
-    // PID Berechnung (mit geglättetem Fehler!)
+    // 2. PID Berechnung
     double P = KP * smoothed_error;
 
-    pid_state.integral += smoothed_error * dt;
-    if (pid_state.integral > 1000) pid_state.integral = 1000;
-    if (pid_state.integral < -1000) pid_state.integral = -1000;
+    pid_state.integral = std::max(-1000.0, std::min(1000.0, pid_state.integral + (smoothed_error * dt)));
     double I = KI * pid_state.integral;
 
-    // Derivative: Hier ist der Trick. Entweder man nimmt (error - prev_error)
-    // oder besser (smoothed_error - prev_smoothed_error) um Spikes zu vermeiden.
     double derivative = (smoothed_error - pid_state.prev_error) / dt;
     double D = KD * derivative;
 
@@ -191,17 +148,11 @@ void follow_lane(ros::Publisher& publisher, LaneLine left_line, LaneLine right_l
 
     int steering_cmd = static_cast<int>(output);
 
-    // === 2. SLEW RATE LIMITER (Verhindert plötzliches Reissen) ===
-    // Wir begrenzen, wie stark sich die Lenkung im Vergleich zum letzten Mal ändern darf.
+    // 3. Slew Rate Limiter (Ruckbegrenzung)
     int delta = steering_cmd - pid_state.last_steering_output;
-
-    if (delta > MAX_STEERING_CHANGE) {
-        steering_cmd = pid_state.last_steering_output + MAX_STEERING_CHANGE;
-    } else if (delta < -MAX_STEERING_CHANGE) {
-        steering_cmd = pid_state.last_steering_output - MAX_STEERING_CHANGE;
+    if (std::abs(delta) > MAX_STEERING_CHANGE) {
+        steering_cmd = pid_state.last_steering_output + (delta > 0 ? MAX_STEERING_CHANGE : -MAX_STEERING_CHANGE);
     }
-
-    // Speichern
     pid_state.last_steering_output = steering_cmd;
 
     publish_steering(publisher, steering_cmd);
@@ -216,8 +167,6 @@ void stop_wheels(ros::Publisher& publisher) {
     ros::Duration(1.0).sleep();
 }
 
-// ... (Includes und setup_lights Funktion bleiben gleich) ...
-
 int driver(int argc, char **argv) {
     g_robot_name = get_robot_name();
     ros::init(argc, argv, "lane_follower_driver", ros::init_options::AnonymousName);
@@ -230,10 +179,6 @@ int driver(int argc, char **argv) {
     ros::Subscriber sub = n.subscribe(topic_cam, 1, imageCallback);
 
     string topic_led = "/" + g_robot_name + "/led_driver_node/led_pattern";
-    // DEBUG-AUSGABE: Prüfen Sie in der Konsole, ob hier der richtige Robotername steht!
-    //ROS_INFO("LED Topic: %s", topic_led.c_str());
-
-    // Wir entfernen latch=true, da wir es jetzt eh regelmäßig senden
     ros::Publisher led_pub = n.advertise<duckietown_msgs::LEDPattern>(topic_led, 1);
 
     #ifdef USE_NEW_PIPELINE
@@ -244,19 +189,14 @@ int driver(int argc, char **argv) {
         CompareMethod compareMethod;
     #endif
 
-    // Initial einmal warten
     ros::Duration(1.0).sleep();
-
-    // setup_lights(led_pub); <--- HIER RAUSNEHMEN, wir machen das unten im Loop
 
     ros::Rate loop_rate(30);
     const double PROCESS_INTERVAL = 0.08;
-
     ros::Time last_process_time = ros::Time::now();
-
-    // NEU: Timer für LEDs
     ros::Time last_led_time = ros::Time(0);
 
+    // Warte auf gültige Zeit
     ros::Time start_time = ros::Time::now();
     while (start_time.toSec() == 0) {
         start_time = ros::Time::now();
@@ -264,10 +204,8 @@ int driver(int argc, char **argv) {
     }
 
     double elapsed_sec = 0;
-
-	long total_frames_processed = 0;
-	long successful_frames = 0;
-  
+    long total_frames_processed = 0;
+    long successful_frames = 0;
 
     while (ros::ok() && elapsed_sec < RuntimeConfig::execution_duration) {
         ros::spinOnce();
@@ -275,78 +213,63 @@ int driver(int argc, char **argv) {
         elapsed_sec = (current_time - start_time).toSec();
         double time_since_process = (current_time - last_process_time).toSec();
 
-        // --- NEU: LEDs alle 2 Sekunden erzwingen ---
-        // Das überschreibt alle anderen Nodes, die die Lampen ausschalten wollen.
+        // LEDs periodisch erzwingen
         if ((current_time - last_led_time).toSec() > 2.0) {
             setup_lights(led_pub);
             last_led_time = current_time;
         }
-        // -------------------------------------------
 
         if (time_since_process >= PROCESS_INTERVAL && g_has_new_frame && !g_current_frame.empty()) {
-             Mat working_frame = g_current_frame.clone();
-             g_has_new_frame = false;
-             vector<LaneLine> lines;
+            Mat working_frame = g_current_frame.clone();
+            g_has_new_frame = false;
+            vector<LaneLine> lines;
 
-             #ifdef USE_NEW_PIPELINE
+            #ifdef USE_NEW_PIPELINE
                 pipeline.process(working_frame);
                 lines = pipeline.getTrackingResult();
-             #else
+            #else
                 lines = compareMethod.generateHoughValuesOntestvideowithTrapezoid(working_frame);
-             #endif
+            #endif
 
-			total_frames_processed++;
-			bool valid_detection = false;
+            total_frames_processed++;
+            bool valid_detection = false;
 
-			if (lines.size() >= 2) {
-			    LaneLine line_L = lines[0];
-			    LaneLine line_R = lines[1];
+            if (lines.size() >= 2) {
+                // Fallback für Initialisierung der ChuckNorris Pipeline
+                if (successful_frames == 0) {
+                    successful_frames = 1;
+                    total_frames_processed = 1;
+                }
 
+                // Sanity Check
+                double x_left = get_x_at_y(lines[0], LOOKAHEAD_Y);
+                double x_right = get_x_at_y(lines[1], LOOKAHEAD_Y);
+                double width = std::abs(x_right - x_left);
 
-				// Fallback Lösung, da ChuckNorris am Anfang
-				// 	sich erst einpendeln muss und daher in den ersten Sekunden keine Ergebnisse liefert
-				if (successful_frames == 0) {
-					successful_frames = 1;
-					total_frames_processed = 1;
-				}
+                if (width > MIN_WIDTH && width < MAX_WIDTH) {
+                    valid_detection = true;
+                    successful_frames++;
+                }
+            }
 
-    			// --- SANITY CHECK---
-    			// Berechne Punkte auf Höhe des Lookaheads
-    			double x_left = get_x_at_y(line_L, LOOKAHEAD_Y);
-    			double x_right = get_x_at_y(line_R, LOOKAHEAD_Y);
-    			double width = std::abs(x_right - x_left);
+            // Statistik Ausgabe alle 100 Frames
+            if (total_frames_processed % 100 == 0) {
+                double rate = 100.0 * (double)successful_frames / total_frames_processed;
+                ROS_INFO("Score: %.1f %% Frames valid", rate);
+            }
 
-			    // Nur wenn die Breite physikalisch Sinn ergibt (z.B. 150 bis 450 Pixel),
-				//ROS_INFO("width: %.1f", width);
-    			if (width > MIN_WIDTH && width < MAX_WIDTH) {
-        			valid_detection = true;
-    			}
-			}
-
-			if (valid_detection) {
-    			successful_frames++;
-			}
-
-			// Nur alle 100 Frames mal ausgeben, um die Konsole nicht zu fluten
-			if (total_frames_processed % 100 == 0) {
-    			double rate = 100.0 * (double)successful_frames / total_frames_processed;
-    			ROS_INFO("Verfahren-Score: %.1f %% Frames mit 2 Linien", rate);
-			}
-
-             if (lines.size() >= 2) {
-                LaneLine line_L = lines[0];
-                LaneLine line_R = lines[1];
-                follow_lane(publisher, line_L, line_R);
-             } else {
+            if (lines.size() >= 2) {
+                follow_lane(publisher, lines[0], lines[1]);
+            } else {
                 ROS_WARN("Linien verloren - halte Kurs");
-             }
-             last_process_time = ros::Time::now();
+            }
+            last_process_time = ros::Time::now();
         }
         loop_rate.sleep();
     }
 
-	double rate = 100.0 * (double)successful_frames / total_frames_processed;
-    ROS_INFO("Finaler-Verfahren-Score: %.1f %% Frames mit 2 Linien", rate);
+    double rate = 100.0 * (double)successful_frames / total_frames_processed;
+    ROS_INFO("Finaler Score: %.1f %%", rate);
 
     stop_wheels(publisher);
     return 0;

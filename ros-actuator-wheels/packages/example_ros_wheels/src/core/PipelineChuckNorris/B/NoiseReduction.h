@@ -9,4 +9,4 @@ class NoiseReduction {
     Mat process(Mat image);
 };
 
-#endif // NOISEREDUCTION_H
+#endif
