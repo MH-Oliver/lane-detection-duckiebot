@@ -30,3 +30,16 @@ In der Datei `src/main.cpp` kann über ein Define gesteuert werden, welche Pipel
 ```cpp
 // Einkommentieren für neue Pipeline, auskommentieren für alte Methode
 #define USE_NEW_PIPELINE
+```
+
+### Deployment auf dem Duckiebot
+
+Um das Projekt auf dem Duckiebot auszuführen sind folgende Schritte notwendig
+
+0. Auf dem Computer muss die Duckietown Shell entsprechend der offiziellen Anleitung installiert sein: `https://duckietown.com`
+1. Mit dem Terminal in das Hauptverzeichnis vom Projekt wechseln. Sicherstellen, dass der Duckiebot hochgefahren und im gleichen Netzwerk ist.
+2. `cd ros-actuator-wheels`
+3.	`dts devel build -f -H ROBOT_NAME`
+4.	`dts devel run -H ROBOT_NAME`
+5.	`http://zeta.local` den neuen Container (ros-actuator-wheels) starten
+6.	Um auf das Log zuzugreifen, muss das Log des entsprechenden Containers geöffnet werden
