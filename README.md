@@ -14,7 +14,7 @@ Die Steuerung des Roboters erfolgt in beiden Fällen über einen geglätteten **
 
 ## Struktur
 
-Die Codebasis ist wie folgt organisiert:
+Die Codebasis ist wie folgt organisiert (unter **`ros-actuator-wheels/packages/example_ros_wheels`**):
 
 * **`src/main.cpp`**: Der Haupttreiber. Hier laufen die ROS-Kommunikation, der PID-Regler und die Auswahl des Verfahrens zusammen.
 * **`src/core/PipelineChuckNorris/`**: Enthält den modularen Code des neuen Verfahrens (Color Space Scaling, Noise Reduction, Fuzzy Canny, ROI, Hough, Tracking).
